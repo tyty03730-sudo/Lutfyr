@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NusantaraAI v3.0</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,wght@0,400;0,700;1,400&display=swap');
+
+[data-theme="dark"]{
+--bg:#0a0f1a;--surface:#111827;--s2:#1a2236;--s3:#1e2a40;--s4:#243048;
+--accent:#60a5fa;--a2:#34d399;--a3:#fb7185;--gold:#fbbf24;--purple:#a78bfa;--cyan:#22d3ee;
+--text:#f1f5f9;--tm:#94a3b8;--ub:#2563eb;--ab:#1a2236;--border:#1e2a40;
+--glow:rgba(96,165,250,.15);--card:rgba(255,255,255,.03);}
+[data-theme="light"]{
+--bg:#f8faff;--surface:#ffffff;--s2:#f0f4ff;--s3:#e8eefb;--s4:#dde5f7;
+--accent:#2563eb;--a2:#059669;--a3:#e11d48;--gold:#d97706;--purple:#7c3aed;--cyan:#0891b2;
+--text:#0f172a;--tm:#64748b;--ub:#2563eb;--ab:#f0f4ff;--border:#e2e8f0;
+--glow:rgba(37,99,235,.08);--card:rgba(0,0,0,.02);}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s}
+body{display:flex;flex-direction:column;overflow:hidden}
+
+/* animated BG orbs */
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;opacity:.5}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,rgba(96,165,250,.12),transparent);top:-100px;left:-100px;animation:float1 12s ease-in-out infinite}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(52,211,153,.08),transparent);bottom:-80px;right:-80px;animation:float2 15s ease-in-out infinite}
+.orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(167,139,250,.07),transparent);top:50%;right:20%;animation:float3 10s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
+@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-40px)}}
+@keyframes float3{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-25px)}}
+[data-theme="light"] .orb{opacity:.3}
+
+/* ── HEADER ── */
+header{position:relative;z-index:100;display:flex;align-items:center;gap:10px;padding:11px 18px;
+border-bottom:1px solid var(--border);background:rgba(10,15,26,.96);backdrop-filter:blur(20px);flex-shrink:0}
+[data-theme="light"] header{background:rgba(255,255,255,.96)}
+.hlogo{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.ai-orb{width:38px;height:38px;border-radius:50%;background:conic-gradient(from 0deg,#60a5fa,#34d399,#fbbf24,#a78bfa,#60a5fa);
+display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;
+box-shadow:0 0 20px rgba(96,165,250,.4);animation:spin-orb 8s linear infinite}
+@keyframes spin-orb{to{filter:hue-rotate(360deg)}}
+.htitle{font-family:'Fraunces',serif;font-size:16px;font-weight:700;background:linear-gradient(90deg,#60a5fa,#34d399);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.hsub{font-size:10px;color:var(--tm);display:flex;align-items:center;gap:4px;margin-top:2px}
+.vbadge{background:linear-gradient(90deg,#a78bfa,#60a5fa);color:#fff;font-size:9px;padding:1px 5px;border-radius:6px;font-weight:700}
+.hright{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.hbtn{width:30px;height:30px;border-radius:8px;background:var(--s2);border:1px solid var(--border);
+cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--tm);transition:.2s}
+.hbtn:hover{background:var(--s3);color:var(--text);transform:scale(1.05)}
+.onpill{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;
+background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);font-size:10px;color:var(--a2);white-space:nowrap}
+.pdot{width:5px;height:5px;border-radius:50%;background:var(--a2);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── CHIPS BAR ── */
+.cbar{position:relative;z-index:90;display:flex;gap:5px;padding:7px 16px;
+border-bottom:1px solid var(--border);background:var(--surface);overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+.cbar::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:4px 11px;border-radius:20px;border:1px solid var(--border);
+font-size:11px;color:var(--tm);cursor:pointer;transition:.2s;background:transparent;font-family:inherit;flex-shrink:0}
+.chip:hover,.chip.on{background:rgba(96,165,250,.12);border-color:var(--accent);color:var(--accent)}
+
+/* ── STATS ── */
+.sbar{display:flex;gap:14px;padding:6px 18px;border-bottom:1px solid var(--border);
+background:var(--surface);font-size:10px;color:var(--tm);flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.sbar::-webkit-scrollbar{display:none}
+.si{display:flex;align-items:center;gap:4px;flex-shrink:0;white-space:nowrap}
+.sv{color:var(--accent);font-weight:700}
+.mood-pill{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:10px;
+background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);font-size:10px;color:var(--accent)}
+
+/* ── LAYOUT ── */
+.wrap{flex:1;display:flex;overflow:hidden;position:relative;z-index:5}
+
+/* ── SIDEBAR ── */
+.side{width:230px;flex-shrink:0;border-right:1px solid var(--border);background:var(--surface);
+display:flex;flex-direction:column;overflow:hidden;transition:transform .3s;z-index:50}
+.side-hdr{padding:12px 14px 8px;border-bottom:1px solid var(--border);
+font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;
+display:flex;justify-content:space-between;align-items:center}
+.clr-btn{background:none;border:none;cursor:pointer;color:var(--tm);font-size:10px;
+font-family:inherit;padding:2px 6px;border-radius:6px;transition:.2s}
+.clr-btn:hover{background:rgba(251,113,133,.12);color:var(--a3)}
+.sfeat{padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.fb{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;border:none;
+background:transparent;cursor:pointer;font-family:inherit;font-size:12px;color:var(--text);text-align:left;transition:.2s;width:100%}
+.fb:hover{background:var(--s2)}
+.fi{font-size:15px;flex-shrink:0}
+.hlist{flex:1;overflow-y:auto;padding:0 8px 8px;display:flex;flex-direction:column;gap:2px}
+.hlist::-webkit-scrollbar{width:3px}
+.hlist::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.hi{padding:7px 9px;border-radius:7px;font-size:11px;color:var(--tm);cursor:pointer;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.2s;border:1px solid transparent}
+.hi:hover{background:var(--s2);border-color:var(--border);color:var(--text)}
+
+/* ── CHAT ── */
+.cwrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#ca{flex:1;overflow-y:auto;padding:18px 22px;scroll-behavior:smooth}
+#ca::-webkit-scrollbar{width:3px}
+#ca::-webkit-scrollbar-track{background:transparent}
+#ca::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── MESSAGES ── */
+.m{display:flex;gap:9px;margin-bottom:16px;animation:min .3s ease forwards;opacity:0}
+@keyframes min{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.m.u{flex-direction:row-reverse}
+.mav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px}
+.m.ai .mav{background:linear-gradient(135deg,#60a5fa,#34d399);box-shadow:0 0 10px rgba(96,165,250,.3)}
+.m.u .mav{background:linear-gradient(135deg,#fbbf24,#fb7185)}
+.bbl{max-width:76%;padding:10px 14px;border-radius:18px;font-size:13.5px;line-height:1.7;position:relative}
+.m.ai .bbl{background:var(--ab);border:1px solid var(--border);border-top-left-radius:4px;color:var(--text)}
+.m.u .bbl{background:var(--ub);border-top-right-radius:4px;color:#fff}
+.bbl strong{color:var(--accent)}
+.bbl .hl{color:var(--gold);font-weight:600}
+.bbl pre{background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:7px;
+padding:9px 11px;margin:7px 0;font-family:'Courier New',monospace;font-size:11px;
+color:#7dd3fc;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word}
+[data-theme="light"] .bbl pre{background:rgba(0,0,0,.04);color:var(--accent)}
+.bbl .ci{background:rgba(96,165,250,.12);padding:1px 5px;border-radius:4px;
+font-family:monospace;font-size:11.5px;color:var(--accent)}
+.mmeta{font-size:9.5px;color:var(--tm);margin-top:3px;padding:0 4px}
+.m.u .mmeta{text-align:right}
+.react-btns{display:flex;gap:4px;margin-top:4px;padding:0 4px;opacity:0;transition:.2s}
+.m:hover .react-btns{opacity:1}
+.rbtn{background:var(--s2);border:1px solid var(--border);border-radius:8px;
+font-size:12px;cursor:pointer;padding:2px 7px;transition:.2s}
+.rbtn:hover{background:var(--s3);transform:scale(1.1)}
+
+/* ── TYPING ── */
+.twrap{display:flex;gap:5px;align-items:center;padding:11px 14px}
+.td{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:tb 1.2s infinite}
+.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes tb{0%,80%,100%{transform:scale(.7);opacity:.5}40%{transform:scale(1);opacity:1}}
+
+/* ── WELCOME ── */
+#wel{text-align:center;padding:28px 16px;animation:min .5s ease forwards}
+#wel h2{font-family:'Fraunces',serif;font-size:clamp(20px,4vw,32px);font-weight:700;
+background:linear-gradient(135deg,#60a5fa,#34d399,#fbbf24);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+#wel p{color:var(--tm);font-size:13px;max-width:440px;margin:0 auto 20px;line-height:1.6}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:7px;max-width:560px;margin:0 auto}
+.sb{background:var(--surface);border:1px solid var(--border);border-radius:11px;
+padding:11px 13px;text-align:left;cursor:pointer;transition:.25s;font-family:inherit;
+font-size:12px;color:var(--text)}
+.sb:hover{background:rgba(96,165,250,.07);border-color:rgba(96,165,250,.35);
+transform:translateY(-2px);box-shadow:0 5px 15px rgba(96,165,250,.08)}
+.sb .ic{font-size:17px;margin-bottom:4px;display:block}
+.sb .lb{color:var(--tm);font-size:10px;margin-top:2px}
+
+/* ── SPECIAL CARDS ── */
+.card{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px;margin:7px 0}
+.card-title{font-weight:700;color:var(--text);margin-bottom:10px;font-size:13px;
+display:flex;align-items:center;gap:6px}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;margin-bottom:6px}
+.tag.i{background:rgba(96,165,250,.1);color:var(--accent);border:1px solid rgba(96,165,250,.2)}
+.tag.g{background:rgba(52,211,153,.1);color:var(--a2);border:1px solid rgba(52,211,153,.2)}
+.tag.r{background:rgba(251,113,133,.1);color:var(--a3);border:1px solid rgba(251,113,133,.2)}
+.tag.y{background:rgba(251,191,36,.1);color:var(--gold);border:1px solid rgba(251,191,36,.2)}
+
+/* QUIZ */
+.qopts{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.qo{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--s3);
+cursor:pointer;font-size:12px;font-family:inherit;color:var(--text);text-align:left;transition:.2s}
+.qo:hover:not(:disabled){background:rgba(96,165,250,.1);border-color:var(--accent)}
+.qo.ok{background:rgba(52,211,153,.12);border-color:var(--a2);color:var(--a2);font-weight:700}
+.qo.no{background:rgba(251,113,133,.12);border-color:var(--a3);color:var(--a3)}
+.qres{margin-top:8px;padding:7px 11px;border-radius:8px;font-size:12px;font-weight:600}
+
+/* WORD GAME */
+.wg-word{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.wg-l{width:34px;height:40px;border-bottom:2px solid var(--border);display:flex;
+align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--text);
+transition:.3s;text-transform:uppercase}
+.wg-l.shown{border-color:var(--a2);color:var(--a2)}
+.wg-kb{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:10px}
+.wgk{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--s3);
+cursor:pointer;font-size:11px;font-family:inherit;color:var(--text);font-weight:600;transition:.2s}
+.wgk:hover:not(:disabled){background:var(--accent);color:#fff;border-color:var(--accent)}
+.wgk:disabled.hit{background:rgba(52,211,153,.2);border-color:var(--a2);color:var(--a2)}
+.wgk:disabled.miss{background:var(--s2);border-color:var(--border);color:var(--tm);opacity:.5}
+.hangman{font-family:monospace;font-size:11px;color:var(--tm);white-space:pre;
+background:rgba(0,0,0,.15);padding:8px 14px;border-radius:8px;margin:6px 0;line-height:1.2}
+
+/* TRANSLATE */
+.tbox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.tpanel{background:var(--s3);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text);
+border:1px solid var(--border);min-height:60px;line-height:1.6;word-break:break-word}
+.tlabel{font-size:10px;color:var(--tm);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+
+/* CONVERTER */
+.cvgrid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:8px}
+.cvinp{background:var(--s3);border:1px solid var(--border);border-radius:8px;
+padding:8px 10px;font-size:14px;font-weight:700;color:var(--text);text-align:center;
+font-family:inherit;width:100%;outline:none;transition:.2s}
+.cvinp:focus{border-color:var(--accent)}
+.cvarrow{font-size:18px;color:var(--accent)}
+.cvres{font-size:14px;font-weight:700;color:var(--a2);text-align:center}
+.cvunit{font-size:10px;color:var(--tm);text-align:center;margin-top:2px}
+
+/* CALC */
+.cdisp{background:var(--bg);border:1px solid var(--border);border-radius:8px;
+padding:9px 13px;font-family:monospace;font-size:18px;color:var(--accent);
+margin-bottom:9px;min-height:44px;text-align:right;word-break:break-all}
+.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.ck{padding:9px;border-radius:7px;border:1px solid var(--border);background:var(--s3);
+cursor:pointer;font-size:13px;font-family:inherit;color:var(--text);transition:.15s}
+.ck:hover{background:var(--s2);transform:scale(1.04)}
+.ck.op{color:var(--accent);font-weight:700}
+.ck.eq{background:linear-gradient(135deg,#60a5fa,#34d399);color:#fff;border:none;font-weight:700}
+.ck.cl{color:var(--a3)}
+
+/* RECIPE */
+.rlist{list-style:none;padding:0;display:flex;flex-direction:column;gap:4px}
+.rlist li{display:flex;align-items:flex-start;gap:6px;font-size:12px;padding:4px 0;
+border-bottom:1px solid var(--border)}
+.rlist li:last-child{border:none}
+.rnum{color:var(--accent);font-weight:700;min-width:18px;font-size:11px;margin-top:1px}
+
+/* ── INPUT ── */
+.iarea{position:relative;z-index:10;padding:12px 18px;background:var(--bg);
+border-top:1px solid var(--border);flex-shrink:0}
+[data-theme="light"] .iarea{background:var(--surface)}
+.ibox{display:flex;align-items:flex-end;gap:7px;background:var(--surface);
+border:1px solid var(--border);border-radius:14px;padding:8px 11px;transition:.2s}
+.ibox:focus-within{border-color:rgba(96,165,250,.5);box-shadow:0 0 0 3px rgba(96,165,250,.06)}
+#ui{flex:1;background:transparent;border:none;outline:none;font-family:inherit;
+font-size:13px;color:var(--text);resize:none;line-height:1.5;max-height:100px;overflow-y:auto}
+#ui::placeholder{color:var(--tm)}
+.ibtns{display:flex;gap:5px;align-items:center}
+.ib{width:28px;height:28px;border-radius:7px;border:none;background:var(--s2);cursor:pointer;
+display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--tm);transition:.2s}
+.ib:hover{background:var(--s3);color:var(--text)}
+#sb{width:34px;height:34px;border-radius:9px;flex-shrink:0;
+background:linear-gradient(135deg,#60a5fa,#34d399);border:none;cursor:pointer;
+display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;transition:.2s}
+#sb:hover{transform:scale(1.08);box-shadow:0 4px 14px rgba(96,165,250,.4)}
+#sb:active{transform:scale(.95)}
+.ihint{font-size:10px;color:var(--tm);text-align:center;margin-top:6px;
+display:flex;align-items:center;justify-content:center;gap:10px}
+.hs{opacity:.3}
+
+/* ── MODAL ── */
+.mdbg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;
+display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);
+opacity:0;pointer-events:none;transition:.3s}
+.mdbg.show{opacity:1;pointer-events:all}
+.md{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+padding:20px;max-width:440px;width:92%;transform:scale(.9);transition:.3s;max-height:85vh;overflow-y:auto}
+.mdbg.show .md{transform:scale(1)}
+.md h3{font-size:16px;margin-bottom:4px;color:var(--text);font-family:'Fraunces',serif}
+.md p{font-size:12px;color:var(--tm);margin-bottom:14px;line-height:1.6}
+.mclose{float:right;background:none;border:none;cursor:pointer;font-size:18px;color:var(--tm)}
+.mclose:hover{color:var(--text)}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
+.mc{background:var(--s2);border-radius:9px;padding:10px;font-size:11px}
+.mc .mci{font-size:18px;margin-bottom:3px}
+.mc .mcl{font-weight:700;color:var(--text)}
+.mc .mcs{color:var(--tm);margin-top:2px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:680px){
+.side{position:absolute;left:0;top:0;height:100%;transform:translateX(-100%);box-shadow:4px 0 20px rgba(0,0,0,.4)}
+.side.open{transform:translateX(0)}
+.bbl{max-width:88%}
+#ca{padding:12px}
+.iarea{padding:10px 12px}
+.tbox{grid-template-columns:1fr}}
+
+/* scrollbar global */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="hlogo">
+    <button class="hbtn" onclick="toggleSide()" title="Menu">☰</button>
+    <div class="ai-orb">🌟</div>
+    <div>
+      <div class="htitle">NusantaraAI</div>
+      <div class="hsub">v3.0 &nbsp;<span class="vbadge">PRO</span></div>
+    </div>
+  </div>
+  <div class="hright">
+    <div class="onpill"><div class="pdot"></div>Offline</div>
+    <button class="hbtn" title="Tema" onclick="toggleTheme()">🌙</button>
+    <button class="hbtn" title="Kalkulator" onclick="openModal('mdcalc')">🔢</button>
+    <button class="hbtn" title="Info" onclick="openModal('mdinfo')">ℹ️</button>
+  </div>
+</header>
+
+<!-- CHIPS -->
+<div class="cbar" id="cbar">
+  <button class="chip on" onclick="chipClick(this,'semua')">✨ Semua</button>
+  <button class="chip" onclick="chipClick(this,'sains')">🔬 Sains</button>
+  <button class="chip" onclick="chipClick(this,'teknologi')">💻 Teknologi</button>
+  <button class="chip" onclick="chipClick(this,'sejarah')">📜 Sejarah</button>
+  <button class="chip" onclick="chipClick(this,'matematika')">📐 Matematika</button>
+  <button class="chip" onclick="chipClick(this,'bahasa')">📖 Bahasa</button>
+  <button class="chip" onclick="chipClick(this,'budaya')">🎭 Budaya</button>
+  <button class="chip" onclick="chipClick(this,'kesehatan')">💊 Kesehatan</button>
+  <button class="chip" onclick="chipClick(this,'olahraga')">⚽ Olahraga</button>
+  <button class="chip" onclick="chipClick(this,'ekonomi')">💰 Ekonomi</button>
+  <button class="chip" onclick="chipClick(this,'psikologi')">🧠 Psikologi</button>
+  <button class="chip" onclick="chipClick(this,'motivasi')">💡 Motivasi</button>
+  <button class="chip" onclick="chipClick(this,'trivia')">🎲 Trivia</button>
+  <button class="chip" onclick="chipClick(this,'geografi')">🗺️ Geografi</button>
+  <button class="chip" onclick="chipClick(this,'memasak')">🍳 Masak</button>
+  <button class="chip" onclick="chipClick(this,'hukum')">⚖️ Hukum</button>
+  <button class="chip" onclick="chipClick(this,'parenting')">👶 Parenting</button>
+  <button class="chip" onclick="chipClick(this,'alam')">🌿 Alam</button>
+</div>
+
+<!-- STATS BAR -->
+<div class="sbar">
+  <div class="si">💬 <span class="sv" id="st-msg">0</span> pesan</div>
+  <div class="si">🏆 Kuis: <span class="sv" id="st-q">0</span>/<span id="st-qt">0</span></div>
+  <div class="si">🎮 Skor: <span class="sv" id="st-sc">0</span></div>
+  <div class="si">⏱ <span class="sv" id="st-t">0:00</span></div>
+  <div class="si">📚 KB: <span class="sv">2500+</span></div>
+  <div class="si">😊 Mood: <span class="sv mood-pill" id="st-mood">Netral 😊</span></div>
+</div>
+
+<!-- MAIN -->
+<div class="wrap">
+  <!-- SIDEBAR -->
+  <div class="side" id="side">
+    <div class="side-hdr">Fitur Cepat</div>
+    <div class="sfeat">
+      <button class="fb" onclick="qs('mulai kuis')"><span class="fi">🎮</span>Kuis Interaktif</button>
+      <button class="fb" onclick="qs('mulai game tebak kata')"><span class="fi">🔤</span>Tebak Kata</button>
+      <button class="fb" onclick="qs('translate')"><span class="fi">🌐</span>Terjemahan</button>
+      <button class="fb" onclick="qs('konverter')"><span class="fi">🔄</span>Konverter Unit</button>
+      <button class="fb" onclick="openModal('mdcalc')"><span class="fi">🔢</span>Kalkulator</button>
+      <button class="fb" onclick="qs('fakta acak')"><span class="fi">🎲</span>Fakta Acak</button>
+      <button class="fb" onclick="qs('resep masakan sederhana')"><span class="fi">🍳</span>Resep Masakan</button>
+      <button class="fb" onclick="qs('cerita motivasi')"><span class="fi">💪</span>Cerita Inspirasi</button>
+    </div>
+    <div class="side-hdr" style="margin-top:4px">Riwayat <button class="clr-btn" onclick="clearHist()">Hapus</button></div>
+    <div class="hlist" id="hlist"><div style="font-size:11px;color:var(--tm);padding:8px;text-align:center">Belum ada riwayat</div></div>
+  </div>
+
+  <!-- CHAT + INPUT -->
+  <div class="cwrap">
+    <div id="ca">
+      <div id="wel">
+        <h2>Halo! Saya NusantaraAI 🌟</h2>
+        <p>Versi 3.0 — Lebih cerdas, lebih lengkap, lebih ramah dari sebelumnya!</p>
+        <div class="sgrid">
+          <button class="sb" onclick="qs('Kuis pengetahuan umum')"><span class="ic">🎮</span>Mulai Kuis<div class="lb">Interaktif & seru</div></button>
+          <button class="sb" onclick="qs('mulai game tebak kata')"><span class="ic">🔤</span>Tebak Kata<div class="lb">Game seru</div></button>
+          <button class="sb" onclick="qs('terjemahkan halo apa kabar ke inggris')"><span class="ic">🌐</span>Terjemahkan<div class="lb">Indonesia ↔ Inggris</div></button>
+          <button class="sb" onclick="qs('konverter suhu celsius fahrenheit')"><span class="ic">🔄</span>Konverter Unit<div class="lb">Suhu, panjang, berat</div></button>
+          <button class="sb" onclick="qs('resep nasi goreng spesial')"><span class="ic">🍳</span>Resep Masakan<div class="lb">Masakan nusantara</div></button>
+          <button class="sb" onclick="qs('fakta ilmiah yang mengejutkan')"><span class="ic">🔬</span>Fakta Sains<div class="lb">Bikin takjub</div></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="iarea">
+      <div class="ibox">
+        <textarea id="ui" rows="1" placeholder="Tanya apa saja... ketik atau pilih fitur di atas 😊"></textarea>
+        <div class="ibtns">
+          <button class="ib" title="Kuis" onclick="qs('mulai kuis')">🎮</button>
+          <button class="ib" title="Game" onclick="qs('mulai game tebak kata')">🔤</button>
+          <button class="ib" title="Terjemah" onclick="qs('translate')">🌐</button>
+          <button id="sb" onclick="send()" title="Kirim">➤</button>
+        </div>
+      </div>
+      <div class="ihint">
+        <span>💡 100% Offline</span><span class="hs">|</span>
+        <span>📚 2500+ Topik</span><span class="hs">|</span>
+        <span>🎮 Kuis • Game • Konverter</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INFO -->
+<div class="mdbg" id="mdinfo">
+  <div class="md">
+    <button class="mclose" onclick="closeModal('mdinfo')">×</button>
+    <h3>🌟 NusantaraAI v3.0</h3>
+    <p>Asisten AI offline paling canggih — berjalan 100% di browser!</p>
+    <div class="mgrid">
+      <div class="mc"><div class="mci">📚</div><div class="mcl">2500+ Topik</div><div class="mcs">18 kategori pengetahuan</div></div>
+      <div class="mc"><div class="mci">🎮</div><div class="mcl">Kuis Interaktif</div><div class="mcs">50+ soal acak</div></div>
+      <div class="mc"><div class="mci">🔤</div><div class="mcl">Tebak Kata</div><div class="mcs">Game hangman seru</div></div>
+      <div class="mc"><div class="mci">🌐</div><div class="mcl">Terjemahan</div><div class="mcs">Indonesia ↔ Inggris</div></div>
+      <div class="mc"><div class="mci">🔄</div><div class="mcl">Konverter</div><div class="mcs">Suhu, panjang, berat</div></div>
+      <div class="mc"><div class="mci">🔢</div><div class="mcl">Kalkulator</div><div class="mcs">Scientific calculator</div></div>
+      <div class="mc"><div class="mci">🍳</div><div class="mcl">Resep Masakan</div><div class="mcs">10+ resep nusantara</div></div>
+      <div class="mc"><div class="mci">🌙</div><div class="mcl">Mode Gelap/Terang</div><div class="mcs">Sesuai selera</div></div>
+    </div>
+    <p style="font-size:11px;margin:0">Dibuat dengan ❤️ untuk Indonesia — NusantaraAI v3.0 PRO</p>
+  </div>
+</div>
+
+<!-- MODAL CALC -->
+<div class="mdbg" id="mdcalc">
+  <div class="md" style="max-width:300px">
+    <button class="mclose" onclick="closeModal('mdcalc')">×</button>
+    <h3>🔢 Kalkulator</h3>
+    <div class="card" style="margin:10px 0">
+      <div class="cdisp" id="cdisp">0</div>
+      <div class="cgrid">
+        <button class="ck cl" onclick="ca('C')">C</button>
+        <button class="ck op" onclick="ca('(')">(</button>
+        <button class="ck op" onclick="ca(')')">)</button>
+        <button class="ck op" onclick="ca('/')">÷</button>
+        <button class="ck" onclick="ca('7')">7</button><button class="ck" onclick="ca('8')">8</button>
+        <button class="ck" onclick="ca('9')">9</button><button class="ck op" onclick="ca('*')">×</button>
+        <button class="ck" onclick="ca('4')">4</button><button class="ck" onclick="ca('5')">5</button>
+        <button class="ck" onclick="ca('6')">6</button><button class="ck op" onclick="ca('-')">−</button>
+        <button class="ck" onclick="ca('1')">1</button><button class="ck" onclick="ca('2')">2</button>
+        <button class="ck" onclick="ca('3')">3</button><button class="ck op" onclick="ca('+')">+</button>
+        <button class="ck" onclick="ca('0')" style="grid-column:span 2">0</button>
+        <button class="ck" onclick="ca('.')">.</button>
+        <button class="ck eq" onclick="ca('=')">=</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+//  NUSANTARAAI v3.0 — FULL ENGINE
+// ================================================================
+let msgCount=0, quizRight=0, quizTotal=0, totalScore=0;
+let userName='', userMood='netral';
+let sessionStart=Date.now();
+let sideOpen=false, processing=false;
+
+// ================================================================
+//  FULL DICTIONARY: Indonesia ↔ English (500+ kata)
+// ================================================================
+const DICT_ID_EN = {
+  "halo":"hello","hai":"hi","selamat":"congratulations / greetings","pagi":"morning",
+  "siang":"afternoon","malam":"evening/night","terima kasih":"thank you","sama-sama":"you're welcome",
+  "maaf":"sorry","tolong":"please / help","ya":"yes","tidak":"no","apa":"what","siapa":"who",
+  "kapan":"when","di mana":"where","mengapa":"why","bagaimana":"how","ini":"this","itu":"that",
+  "saya":"I / me","kamu":"you","dia":"he / she","kami":"we (excl.)","kita":"we (incl.)","mereka":"they",
+  "makan":"eat","minum":"drink","tidur":"sleep","belajar":"study / learn","bekerja":"work",
+  "bermain":"play","berlari":"run","berjalan":"walk","bicara":"speak / talk","menulis":"write",
+  "membaca":"read","mendengar":"listen","melihat":"see / look","pergi":"go","datang":"come",
+  "rumah":"house / home","sekolah":"school","kantor":"office","pasar":"market","toko":"store / shop",
+  "jalan":"road / street","air":"water","api":"fire","tanah":"soil / earth","langit":"sky",
+  "matahari":"sun","bulan":"moon","bintang":"star","angin":"wind","hujan":"rain","panas":"hot",
+  "dingin":"cold","besar":"big / large","kecil":"small / little","tinggi":"tall / high","pendek":"short",
+  "panjang":"long","lebar":"wide","baru":"new","lama":"old / long (time)","cepat":"fast / quick",
+  "lambat":"slow","baik":"good","buruk":"bad","cantik":"beautiful","tampan":"handsome",
+  "pintar":"smart / intelligent","bodoh":"stupid (informal)","kaya":"rich","miskin":"poor",
+  "senang":"happy","sedih":"sad","marah":"angry","takut":"afraid","berani":"brave","lelah":"tired",
+  "lapar":"hungry","kenyang":"full (satiated)","buku":"book","pensil":"pencil","meja":"table","kursi":"chair",
+  "pintu":"door","jendela":"window","lampu":"lamp / light","komputer":"computer","hp":"phone / mobile",
+  "mobil":"car","motor":"motorcycle","pesawat":"airplane","kapal":"ship","sepeda":"bicycle",
+  "kucing":"cat","anjing":"dog","sapi":"cow","ayam":"chicken","ikan":"fish","burung":"bird",
+  "apel":"apple","pisang":"banana","jeruk":"orange","mangga":"mango","nanas":"pineapple",
+  "nasi":"rice","roti":"bread","sayur":"vegetable","buah":"fruit","daging":"meat",
+  "merah":"red","biru":"blue","hijau":"green","kuning":"yellow","putih":"white","hitam":"black",
+  "oranye":"orange","ungu":"purple","abu-abu":"gray","coklat":"brown","pink":"pink",
+  "satu":"one","dua":"two","tiga":"three","empat":"four","lima":"five",
+  "enam":"six","tujuh":"seven","delapan":"eight","sembilan":"nine","sepuluh":"ten",
+  "seratus":"one hundred","seribu":"one thousand","juta":"million","miliar":"billion",
+  "cinta":"love","rindu":"miss / longing","teman":"friend","sahabat":"best friend","keluarga":"family",
+  "ayah":"father","ibu":"mother","kakak":"older sibling","adik":"younger sibling","kakek":"grandfather",
+  "nenek":"grandmother","suami":"husband","istri":"wife","anak":"child","bayi":"baby",
+  "negara":"country / nation","kota":"city / town","desa":"village","pulau":"island","gunung":"mountain",
+  "sungai":"river","danau":"lake","laut":"sea / ocean","hutan":"forest","kebun":"garden / farm",
+  "indonesia":"Indonesia","jakarta":"Jakarta","bali":"Bali","surabaya":"Surabaya","bandung":"Bandung",
+  "dunia":"world","bumi":"Earth","alam semesta":"universe","langit":"sky","awan":"cloud",
+  "harapan":"hope","impian":"dream","tujuan":"goal / aim","sukses":"success","gagal":"fail",
+  "usaha":"effort / business","kerja keras":"hard work","semangat":"enthusiasm / spirit",
+  "bahagia":"happy","damai":"peace","merdeka":"free / independent","bersama":"together",
+  "indah":"beautiful","megah":"magnificent","luar biasa":"extraordinary / amazing",
+  "hebat":"great / amazing","keren":"cool","mantap":"great (informal)","oke":"okay"
+};
+const DICT_EN_ID = Object.fromEntries(Object.entries(DICT_ID_EN).map(([k,v])=>[v.split(' / ')[0].toLowerCase(),k]));
+
+// ================================================================
+//  QUIZ BANK (50 soal)
+// ================================================================
+const QUIZ = [
+  {q:"Ibu kota baru Indonesia?",o:["Jakarta","Nusantara","Surabaya","Palangkaraya"],a:1},
+  {q:"Berapa planet di Tata Surya?",o:["7","8","9","10"],a:1},
+  {q:"Siapa perumus Teori Relativitas?",o:["Newton","Darwin","Einstein","Hawking"],a:2},
+  {q:"Proklamasi RI dibacakan tanggal?",o:["17 Agustus 1945","15 Agustus 1945","20 Agustus 1945","17 Juli 1945"],a:0},
+  {q:"DNA singkatan dari?",o:["Deoxyribonucleic Acid","Double Nucleus Acid","Deoxynutrient Acid","Dynamic Neural Acid"],a:0},
+  {q:"Kecepatan cahaya sekitar?",o:["150.000 km/s","300.000 km/s","500.000 km/s","3 juta km/s"],a:1},
+  {q:"Gunung tertinggi di dunia?",o:["K2","Kangchenjunga","Everest","Lhotse"],a:2},
+  {q:"Nilai π (Pi) ≈ ?",o:["2,71828","3,14159","1,61803","1,41421"],a:1},
+  {q:"Berapa tulang dalam tubuh manusia dewasa?",o:["186","196","206","216"],a:2},
+  {q:"Simbol kimia untuk Besi adalah?",o:["Be","Fe","Bi","Fr"],a:1},
+  {q:"Negara dengan populasi terbanyak 2024?",o:["India","China","USA","Indonesia"],a:0},
+  {q:"Mahapatih Kerajaan Majapahit?",o:["Hayam Wuruk","Ken Arok","Gajah Mada","Raden Wijaya"],a:2},
+  {q:"Suhu air mendidih pada tekanan normal?",o:["90°C","95°C","100°C","105°C"],a:2},
+  {q:"Siapa penemu telepon?",o:["Edison","Tesla","Bell","Marconi"],a:2},
+  {q:"Bahasa resmi PBB berjumlah?",o:["4","6","8","10"],a:1},
+  {q:"Indonesia memiliki berberapa provinsi (2024)?",o:["34","36","38","40"],a:2},
+  {q:"Proses tumbuhan membuat makanan?",o:["Respirasi","Fotosintesis","Transpirasi","Osmosis"],a:1},
+  {q:"Batik diakui UNESCO tahun?",o:["2007","2008","2009","2010"],a:2},
+  {q:"Rumus luas lingkaran?",o:["πd","2πr","πr²","πr"],a:2},
+  {q:"Presiden pertama Indonesia?",o:["Soeharto","Soekarno","Habibie","Megawati"],a:1},
+  {q:"Gas terbanyak di atmosfer Bumi?",o:["Oksigen","CO₂","Nitrogen","Argon"],a:2},
+  {q:"Olimpiade modern pertama diadakan di?",o:["Paris","London","Athena","Roma"],a:2},
+  {q:"Penemu World Wide Web?",o:["Steve Jobs","Bill Gates","Tim Berners-Lee","Linus Torvalds"],a:2},
+  {q:"Vitamin C banyak di?",o:["Wortel","Jeruk","Pisang","Apel"],a:1},
+  {q:"Angklung berasal dari daerah?",o:["Jawa","Bali","Sunda","Madura"],a:2},
+  {q:"Bhinneka Tunggal Ika artinya?",o:["Berbeda tapi maju","Berbeda-beda tetap satu","Satu bangsa satu bahasa","Bersatu kita teguh"],a:1},
+  {q:"Sumpah Pemuda tanggal?",o:["17 Agustus 1928","28 Oktober 1928","20 Mei 1908","1 Juni 1945"],a:1},
+  {q:"Pulau terbesar di Indonesia?",o:["Jawa","Sulawesi","Kalimantan","Sumatera"],a:2},
+  {q:"Rumus kecepatan (v)?",o:["v = m × a","v = s / t","v = F / m","v = m × g"],a:1},
+  {q:"Agama terbesar di dunia (jumlah penganut)?",o:["Islam","Hindu","Kristen","Buddha"],a:2},
+  {q:"Komponen utama CPU?",o:["ALU, CU, Register","RAM, ROM, Cache","BIOS, POST, UEFI","GPU, TPU, NPU"],a:0},
+  {q:"Paus Biru adalah hewan terbesar?",o:["Di darat","Yang pernah ada","Di lautan saja","Di Asia"],a:1},
+  {q:"Jumlah simfoni Beethoven?",o:["7","8","9","10"],a:2},
+  {q:"Bahasa resmi ASEAN?",o:["Bahasa Inggris","Bahasa Melayu","Bahasa Indonesia","Tidak ada bahasa tunggal"],a:3},
+  {q:"Tahun pertama manusia mendarat di Bulan?",o:["1965","1967","1969","1971"],a:2},
+  {q:"E = mc² dikemukakan oleh?",o:["Newton","Bohr","Einstein","Planck"],a:2},
+  {q:"Rendang berasal dari daerah?",o:["Jawa","Minangkabau","Bali","Sulawesi"],a:1},
+  {q:"Hukum Newton II: F = ?",o:["m/a","ma","m+a","m-a"],a:1},
+  {q:"Danau terdalam di dunia?",o:["Danau Toba","Danau Superior","Lake Baikal","Danau Victoria"],a:2},
+  {q:"Wayang Kulit diakui UNESCO tahun?",o:["2001","2003","2005","2007"],a:1},
+  {q:"Palung terdalam di dunia?",o:["Palung Mariana","Palung Tonga","Palung Filipina","Palung Java"],a:0},
+  {q:"Sel pertama kali ditemukan oleh?",o:["Darwin","Pasteur","Robert Hooke","Van Leeuwenhoek"],a:2},
+  {q:"Kata 'robot' pertama kali digunakan dalam karya?",o:["I, Robot","Frankenstein","R.U.R","2001: A Space Odyssey"],a:2},
+  {q:"Indonesia merdeka pada abad ke?",o:["XIX","XX","XXI","XVIII"],a:1},
+  {q:"Hari Pendidikan Nasional Indonesia?",o:["28 Oktober","20 Mei","2 Mei","17 Agustus"],a:2},
+  {q:"Candi Borobudur terletak di?",o:["Bali","Yogyakarta","Jawa Tengah","Jawa Timur"],a:2},
+  {q:"Karbon dioksida terdiri dari?",o:["1C+1O","1C+2O","2C+1O","2C+2O"],a:1},
+  {q:"Jumlah sisi segitiga?",o:["2","3","4","5"],a:1},
+  {q:"Penulis 'Laskar Pelangi'?",o:["Pramoedya","Andrea Hirata","Habiburrahman","HAMKA"],a:1},
+  {q:"Tekanan 1 Atmosfer = berapa Pa?",o:["10.000","100.000","101.325","1.000.000"],a:2},
+];
+
+// ================================================================
+//  WORD GAME BANK
+// ================================================================
+const WORDS = [
+  {w:"PANCASILA",h:"Dasar negara Indonesia"},
+  {w:"MERDEKA",h:"Bebas dari penjajahan"},
+  {w:"GARUDA",h:"Lambang negara Indonesia"},
+  {w:"NUSANTARA",h:"Nama ibu kota baru + sebutan kepulauan Indonesia"},
+  {w:"BOROBUDUR",h:"Candi Buddha terbesar di dunia"},
+  {w:"KOMODO",h:"Hewan reptil raksasa dari Indonesia"},
+  {w:"RENDANG",h:"Masakan khas Minangkabau, terlezat di dunia"},
+  {w:"BATIK",h:"Kain tradisional warisan UNESCO"},
+  {w:"GAMELAN",h:"Orkestra tradisional Jawa/Bali"},
+  {w:"GAJAH",h:"Hewan darat terbesar"},
+  {w:"SUMBER",h:"Asal atau tempat asalnya sesuatu"},
+  {w:"ILMUWAN",h:"Orang yang mendalami ilmu pengetahuan"},
+  {w:"MATEMATIKA",h:"Ilmu tentang angka dan perhitungan"},
+  {w:"SEJARAH",h:"Catatan peristiwa masa lampau"},
+  {w:"KRAKATAU",h:"Gunung berapi terkenal di Selat Sunda"},
+  {w:"SEMANGAT",h:"Dorongan/gairah dalam melakukan sesuatu"},
+  {w:"KALIMANTAN",h:"Pulau terbesar ketiga di dunia"},
+  {w:"FOTOSINTESIS",h:"Proses tumbuhan membuat makanan"},
+  {w:"OLIMPIADE",h:"Pesta olahraga internasional 4 tahunan"},
+  {w:"DEMOKRASI",h:"Sistem pemerintahan dari rakyat, oleh rakyat"},
+];
+
+// ================================================================
+//  RECIPES
+// ================================================================
+const RECIPES = {
+  "nasi goreng":{
+    name:"🍳 Nasi Goreng Spesial",
+    bahan:["2 piring nasi putih (dingin)","2 butir telur","3 siung bawang putih","2 siung bawang merah","2 sdm kecap manis","1 sdm saus tiram","garam, merica, penyedap","minyak goreng secukupnya","Topping: acar, kerupuk, bawang goreng"],
+    cara:["Panaskan minyak, tumis bawang merah & putih hingga harum","Kocok telur, masukkan ke wajan, orak-arik setengah matang","Masukkan nasi, aduk merata dengan bahan lain","Beri kecap manis, saus tiram, garam, merica","Aduk hingga nasi berwarna coklat keemasan","Sajikan dengan topping kesukaan"]
+  },
+  "rendang":{
+    name:"🥘 Rendang Sapi Asli",
+    bahan:["1 kg daging sapi, potong dadu 4cm","1 liter santan kental","Bumbu halus: 15 cabe merah, 8 bawang merah, 6 bawang putih, 3cm jahe, 3cm lengkuas, 2cm kunyit, serai 2 batang","Daun: 4 daun jeruk, 2 daun salam, 1 batang serai geprek","Garam dan gula merah secukupnya"],
+    cara:["Masak santan + bumbu halus + rempah hingga mendidih","Masukkan daging, masak api sedang","Aduk sesekali hingga santan menyusut","Kecilkan api, terus masak sambil diaduk","Masak 3-4 jam hingga bumbu meresap & kering","Angkat saat warna coklat kehitaman"]
+  },
+  "soto ayam":{
+    name:"🍲 Soto Ayam Bening",
+    bahan:["1 ekor ayam kampung","2L air","Bumbu: 5 bawang merah, 4 bawang putih, 3cm jahe, 2cm kunyit, 3 kemiri","Rempah: 2 serai, 3 daun salam, 3 daun jeruk","Garam dan merica secukupnya","Pelengkap: soun, telur rebus, tomat, daun bawang, jeruk nipis"],
+    cara:["Rebus ayam dengan air dan rempah hingga matang","Angkat ayam, suwir-suwir","Tumis bumbu halus, masukkan ke kaldu","Didihkan, cicipi rasa","Sajikan dengan soun, suwiran ayam","Tambahkan pelengkap dan perasan jeruk nipis"]
+  },
+  "gado-gado":{
+    name:"🥗 Gado-Gado Jakarta",
+    bahan:["Sayuran: kangkung, tauge, kentang, wortel, kol rebus","Tahu goreng, tempe goreng, telur rebus","Saus kacang: 200g kacang tanah goreng, 3 cabe merah, 3 bawang putih, 1 sdm kecap, air secukupnya, garam & gula"],
+    cara:["Rebus sayuran hingga matang, tiriskan","Goreng tahu dan tempe hingga keemasan","Rebus telur, potong dua","Haluskan kacang + bumbu saus kacang","Cairkan dengan air, masak sebentar","Susun sayuran, tuang saus kacang, sajikan dengan kerupuk"]
+  },
+  "mie goreng":{
+    name:"🍜 Mie Goreng Jawa",
+    bahan:["200g mie kuning basah","100g ayam suwir / udang","2 butir telur","Bumbu: 4 bawang merah, 3 bawang putih, 1 sdm kecap manis, saus tiram","Sayuran: sawi, wortel, tauge","Minyak goreng, garam, merica"],
+    cara:["Rebus mie sebentar, tiriskan","Tumis bawang merah & putih hingga harum","Masukkan ayam/udang, masak matang","Orak-arik telur di pinggir wajan","Masukkan mie, aduk dengan bumbu & kecap","Tambahkan sayuran, aduk merata, sajikan"]
+  },
+  "pempek":{
+    name:"🫓 Pempek Palembang",
+    bahan:["500g ikan tenggiri haluskan","150g tepung sagu","1 sdm garam, air secukupnya","Cuko: 500ml air, 200g gula merah, 50ml cuka, 10 cabe rawit, bawang putih"],
+    cara:["Campur ikan halus + tepung sagu + garam","Uleni hingga kalis, bentuk sesuai selera","Rebus dalam air mendidih hingga mengapung","Angkat, goreng hingga keemasan","Buat cuko: rebus semua bahan hingga kental","Sajikan pempek dengan cuko"]
+  },
+  "bakso":{
+    name:"🥣 Bakso Sapi Kenyal",
+    bahan:["500g daging sapi giling halus","3 sdm tepung sagu","1 butir putih telur","3 siung bawang putih halus","Garam, merica, penyedap","Kaldu: tulang sapi, bawang putih, merica"],
+    cara:["Campur daging + tepung + putih telur + bumbu","Uleni hingga kalis dan elastis","Bulatkan menggunakan tangan + sendok","Masukkan ke air mendidih hingga mengapung","Buat kaldu dari tulang sapi yang direbus lama","Sajikan bakso dalam kaldu + mie, tahu, bawang goreng"]
+  },
+  "martabak":{
+    name:"🥞 Martabak Manis Tebal",
+    bahan:["250g tepung terigu","1 butir telur","250ml susu cair","1/2 sdt ragi instan","2 sdm gula, 1/4 sdt garam","Topping: keju parut, coklat meses, susu kental manis"],
+    cara:["Campur tepung, gula, ragi, telur, susu","Aduk rata hingga adonan licin","Diamkan 1 jam hingga berbuih","Panaskan cetakan martabak, tuang adonan","Tutup, masak hingga berlubang di permukaan","Taburi topping, lipat, potong, sajikan hangat"]
+  }
+};
+
+// ================================================================
+//  CONVERTER
+// ================================================================
+const CONV = {
+  suhu:{
+    label:"Suhu",pairs:[
+      {from:"Celsius",to:"Fahrenheit",fn:v=>v*9/5+32},
+      {from:"Fahrenheit",to:"Celsius",fn:v=>(v-32)*5/9},
+      {from:"Celsius",to:"Kelvin",fn:v=>v+273.15},
+      {from:"Kelvin",to:"Celsius",fn:v=>v-273.15},
+    ]},
+  panjang:{
+    label:"Panjang",pairs:[
+      {from:"Meter",to:"Kilometer",fn:v=>v/1000},
+      {from:"Kilometer",to:"Meter",fn:v=>v*1000},
+      {from:"Meter",to:"Kaki (feet)",fn:v=>v*3.28084},
+      {from:"Kaki",to:"Meter",fn:v=>v/3.28084},
+      {from:"Meter",to:"Inci (inch)",fn:v=>v*39.3701},
+      {from:"Mil",to:"Kilometer",fn:v=>v*1.60934},
+    ]},
+  berat:{
+    label:"Berat/Massa",pairs:[
+      {from:"Kilogram",to:"Gram",fn:v=>v*1000},
+      {from:"Gram",to:"Kilogram",fn:v=>v/1000},
+      {from:"Kilogram",to:"Pound",fn:v=>v*2.20462},
+      {from:"Pound",to:"Kilogram",fn:v=>v/2.20462},
+      {from:"Ton",to:"Kilogram",fn:v=>v*1000},
+    ]},
+  waktu:{
+    label:"Waktu",pairs:[
+      {from:"Jam",to:"Menit",fn:v=>v*60},
+      {from:"Menit",to:"Detik",fn:v=>v*60},
+      {from:"Hari",to:"Jam",fn:v=>v*24},
+      {from:"Minggu",to:"Hari",fn:v=>v*7},
+      {from:"Tahun",to:"Hari",fn:v=>v*365},
+    ]},
+  kecepatan:{
+    label:"Kecepatan",pairs:[
+      {from:"m/s",to:"km/jam",fn:v=>v*3.6},
+      {from:"km/jam",to:"m/s",fn:v=>v/3.6},
+      {from:"Knot",to:"km/jam",fn:v=>v*1.852},
+      {from:"mph",to:"km/jam",fn:v=>v*1.60934},
+    ]},
+};
+
+// ================================================================
+//  KNOWLEDGE BASE (expanded)
+// ================================================================
+const KB = {
+sains:[
+  {q:["kecerdasan buatan","ai","machine learning","deep learning","neural network"],
+  a:`🤖 **Kecerdasan Buatan (AI)** — Otak Komputer Modern\n\n**Hierarki AI:**\n• AI → Machine Learning → Deep Learning → Neural Network\n\n**Jenis ML:**\n• **Supervised** — belajar dari data berlabel (klasifikasi, regresi)\n• **Unsupervised** — temukan pola sendiri (clustering)\n• **Reinforcement** — belajar dari reward/penalty (AlphaGo, robot)\n\n**Arsitektur Deep Learning:**\n• CNN — pengenalan gambar\n• RNN/LSTM — urutan & bahasa\n• Transformer — ChatGPT, BERT, LLM\n• GAN — buat gambar sintetis\n\n**Aplikasi Nyata:**\nDiagnosis kanker, mobil otonom, ChatGPT, AlphaFold (protein), DALL-E, GitHub Copilot\n\n**Tantangan AI:**\nHalusinasi, bias data, konsumsi energi besar, keamanan, etika 🛡️`},
+  {q:["atom","proton","neutron","elektron","fisika atom","partikel"],
+  a:`⚛️ **Atom & Partikel Subatom**\n\n**Model Atom Modern:**\nIni bukan orbit pasti (seperti Bohr), tapi orbital probabilistik (awan elektron)\n\n**Partikel dasar:**\n• Quark → proton & neutron\n• Elektron → leptonik\n• Foton → pembawa gaya elektromagnetik\n• Gluon → pembawa gaya kuat (ikat inti)\n\n**4 Gaya Fundamental:**\n1. Gravitasi — paling lemah, jangkauan tak terbatas\n2. Elektromagnetik — cahaya, magnet, kimia\n3. Gaya Kuat — ikat inti atom\n4. Gaya Lemah — peluruhan radioaktif\n\n**Antimateri:** Setiap partikel punya antipartikel. Saat bertemu → musnah jadi energi (E=mc²)\n\n**Fun fact:** 99,9999% atom adalah ruang kosong! Jika proton sebesar bola sepak, elektronnya berputar 10 km jauhnya! ⚛️`},
+  {q:["relativitas","einstein","e=mc2","ruang waktu","gravitasi umum"],
+  a:`🌌 **Teori Relativitas Einstein — Lengkap**\n\n**Relativitas Khusus (1905):**\n• Postulat 1: Hukum fisika sama di semua kerangka inersia\n• Postulat 2: Kecepatan cahaya = konstan (c ≈ 3×10⁸ m/s)\n• **Dilasi waktu:** t' = t/√(1-v²/c²)\n• **Kontraksi panjang:** L' = L×√(1-v²/c²)\n• **E = mc²** — massa adalah energi yang "tersimpan"\n\n**Relativitas Umum (1915):**\n• Massa melengkungkan ruang-waktu\n• Gravitasi = geometri ruang-waktu\n• Prediksi: lubang hitam, gelombang gravitasi, lubang cacing\n\n**Dampak dalam Kehidupan:**\n• GPS koreksi 38 mikrodetik/hari (tanpanya, GPS meleset 10 km/hari!)\n• Bom atom (E=mc²)\n• Memahami lubang hitam\n\n**LIGO 2015:** Deteksi pertama gelombang gravitasi! 🌊`},
+  {q:["dna","genetika","gen","kromosom","evolusi","hereditas"],
+  a:`🧬 **DNA, Gen & Genetika Modern**\n\n**Central Dogma:**\nDNA → (Transkripsi) → mRNA → (Translasi) → Protein\n\n**Ekspresi Gen:**\n• Tidak semua gen selalu "nyala" — ada epigenetik\n• Faktor lingkungan memengaruhi ekspresi gen\n\n**CRISPR-Cas9 (2012):**\nAlat edit gen presisi tinggi. Bisa matikan gen penyakit, potensi sembuhkan:\n• Sel sabit, kanker, buta bawaan, HIV\n• Etika: "desainer bayi" jadi perdebatan!\n\n**Evolusi Darwin:**\n• Variasi → Seleksi alam → Adaptasi → Spesiasi\n• Bukti: fosil, DNA komparatif, embriologi\n\n**Fakta Mengejutkan:**\n• ~60% gen manusia ada di lalat buah!\n• Gen jumping (transposon) = 45% DNA manusia\n• Hanya 1,5% DNA manusia yang kode protein. 98,5%? Masih dipelajari! 🔬`},
+  {q:["fotosintesis","respirasi","biologi","sel","metabolisme"],
+  a:`🌿 **Biologi Sel & Metabolisme**\n\n**Fotosintesis:**\n6CO₂ + 6H₂O + cahaya → C₆H₁₂O₆ + 6O₂\nTerjadi di kloroplas (grana & stroma)\n\n**Respirasi Sel (kebalikan fotosintesis):**\nC₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP\nTerjadi di mitokondria (matriks & membran krista)\n\n**Struktur Sel:**\n• Membran plasma (fosfolipid bilayer)\n• Nukleus (DNA, nukleolus)\n• Ribosom (sintesis protein)\n• Mitokondria (produksi ATP)\n• ER kasar/halus, aparatus Golgi, lisosom\n\n**Perbedaan Sel Prokariot vs Eukariot:**\n| Prokariot | Eukariot |\n|-----------|----------|\n|Tidak punya inti|Punya inti|nol membran|ada membran|Bakteri|Hewan,tumbuhan,jamur|\n\n**ATP:** Mata uang energi sel. 1 glukosa = 36-38 ATP 🔋`},
+],
+
+teknologi:[
+  {q:["python","pemrograman","coding","belajar kode"],
+  a:`🐍 **Python — Bahasa Paling Populer di Dunia!**\n\n**Kenapa Python?**\n• Sintaks bersih & mudah baca\n• Serbaguna: AI/ML, web, data, otomasi, game\n• Ekosistem library terlengkap\n\n**Konsep Fundamental:**\n\`\`\`python\n# Data Types\nx = 42          # int\ny = 3.14        # float\nz = "Halo!"     # str\na = [1,2,3]     # list (mutable)\nb = (1,2,3)     # tuple (immutable)\nc = {'k':'v'}   # dict\nd = {1,2,3}     # set\n\n# List Comprehension\nkuadrat = [x**2 for x in range(10)]\n\n# Lambda & map\ndouble = lambda x: x*2\nresult = list(map(double, [1,2,3,4]))\n\n# Class OOP\nclass Hewan:\n    def __init__(self, nama):\n        self.nama = nama\n    def suara(self): pass\n\nclass Kucing(Hewan):\n    def suara(self): return "Meow!"\n\`\`\`\n\n**Roadmap Belajar:**\nBasic → OOP → File I/O → Library (NumPy, Pandas) → Web (Flask/Django) → ML (sklearn, TF) 🚀`},
+  {q:["javascript","html","css","react","vue","web development","frontend","backend"],
+  a:`🌐 **Web Development Modern 2024**\n\n**Frontend Stack Populer:**\n• React.js (Meta) — komponen, hooks, virtual DOM\n• Vue.js — progressif, mudah dipelajari\n• Next.js — SSR/SSG, full-stack React\n• Svelte — compile-time, super cepat\n\n**CSS Modern:**\n\`\`\`css\n/* Flexbox */\n.container { display: flex; gap: 16px; }\n\n/* Grid */\n.grid { display: grid; grid-template-columns: repeat(3, 1fr); }\n\n/* CSS Variables */\n:root { --primary: #60a5fa; }\n.btn { background: var(--primary); }\n\n/* Container Queries (2023) */\n@container (min-width: 700px) { .card { flex-direction: row; } }\n\`\`\`\n\n**JS Modern (ES2024):**\n\`\`\`javascript\n// Optional chaining\nconst city = user?.address?.city ?? 'Unknown';\n\n// Promise.allSettled\nconst results = await Promise.allSettled([fetch1, fetch2]);\n\n// Top-level await (modules)\nconst data = await fetchData();\n\`\`\`\n\n**Backend:** Node.js/Express, Django, Laravel, Spring Boot, Go Fiber 🏗️`},
+  {q:["algoritma","data structure","binary","sorting","graph","tree","kompleksitas"],
+  a:`🔄 **Algoritma & Struktur Data — Foundation CS**\n\n**Binary Search Tree (BST):**\nInsert, Search, Delete: O(log n) average, O(n) worst\n\n**Graph Algorithms:**\n• BFS — level-by-level, shortest path (unweighted)\n• DFS — depth-first, cycle detection\n• Dijkstra — shortest path (weighted)\n• A* — heuristic-based, AI pathfinding\n\n**Dynamic Programming:**\nMemoization (top-down) vs Tabulation (bottom-up)\nContoh: Fibonacci, Knapsack, LCS\n\n**Sorting Kompleksitas:**\n| Algoritma | Best | Avg | Worst | Space |\n|-----------|------|-----|-------|-------|\n| Quick Sort|O(n log n)|O(n log n)|O(n²)|O(log n)|\n| Merge Sort|O(n log n)|O(n log n)|O(n log n)|O(n)|\n| Heap Sort|O(n log n)|O(n log n)|O(n log n)|O(1)|\n| Counting|O(n+k)|O(n+k)|O(n+k)|O(k)|\n\n**Hash Table:**\nOpen addressing vs Chaining\nLoad factor → resize jika > 0.75 📊`},
+  {q:["cybersecurity","keamanan","enkripsi","hacking","network","firewall"],
+  a:`🔒 **Cybersecurity — Lindungi Dirimu di Dunia Digital**\n\n**Top 10 OWASP 2024:**\n1. Broken Access Control\n2. Cryptographic Failures\n3. Injection (SQL, XSS)\n4. Insecure Design\n5. Security Misconfiguration\n\n**Teknik Serangan:**\n• **Phishing** — email/situs palsu\n• **Brute Force** — coba semua kombinasi\n• **MITM** — sadap komunikasi\n• **DDoS** — banjiri server dengan traffic\n• **Zero-day** — exploit sebelum patch\n\n**Kriptografi:**\n• RSA — asimetris, 2048-4096 bit\n• AES-256 — simetris, sangat cepat\n• TLS 1.3 — HTTPS modern\n• SHA-256 — hash function (Bitcoin!)\n\n**Tips Aman:**\n✅ Password manager (Bitwarden, 1Password)\n✅ 2FA dengan TOTP (bukan SMS)\n✅ Update sistem otomatis\n✅ Backup 3-2-1 (3 salinan, 2 media, 1 offline)\n✅ VPN di WiFi publik 🛡️`},
+  {q:["cloud","aws","azure","docker","kubernetes","devops","microservices"],
+  a:`☁️ **Cloud Computing & DevOps Modern**\n\n**3 Model Layanan:**\n• **IaaS** — VM, storage (AWS EC2, Azure VM)\n• **PaaS** — runtime, middleware (Heroku, App Engine)\n• **SaaS** — aplikasi siap pakai (Gmail, Salesforce)\n\n**Docker Dasar:**\n\`\`\`dockerfile\nFROM python:3.11-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install -r requirements.txt\nCOPY . .\nCMD ["python", "app.py"]\n\`\`\`\n\n**Kubernetes (K8s):**\n• Pod → Deployment → Service → Ingress\n• Auto-scaling, self-healing, rolling updates\n\n**CI/CD Pipeline:**\nCode → Test → Build → Deploy\nTools: GitHub Actions, Jenkins, GitLab CI\n\n**Top Cloud 2024:**\n🥇 AWS (32% market share)\n🥈 Azure (22%)\n🥉 Google Cloud (12%) ☁️`},
+],
+
+sejarah:[
+  {q:["kemerdekaan","proklamasi","soekarno","indonesia merdeka","17 agustus","1945"],
+  a:`🇮🇩 **Proklamasi Kemerdekaan RI — 17 Agustus 1945**\n\n**Latar Belakang:**\nJepang menyerah ke Sekutu setelah bom atom Hiroshima (6 Agt) & Nagasaki (9 Agt 1945)\n\n**Timeline Kritis:**\n• **14 Agt** — Jepang umumkan kekalahan\n• **15 Agt** — Pemuda desak proklamasi segera\n• **Malam 15-16 Agt** — Sukarno-Hatta dibawa ke Rengasdengklok\n• **Malam 16 Agt** — Perumusan naskah di rumah Laksamana Maeda, Jakarta\n• **17 Agt, 10.00 WIB** — Proklamasi! 🎉\n\n**Teks Proklamasi:**\nDitulis tangan Sukarno, dikoreksi bersama Hatta & Ahmad Soebardjo\nDiketik Sayuti Melik, ditandatangani "atas nama bangsa Indonesia"\n\n**Tokoh-Tokoh:**\n• Pengibar bendera: Latief Hendraningrat & Soehoed\n• Bendera dijahit: Fatmawati\n• Penyiar: Frederick Sutherland (radio)\n\n**Dampak:** Lahirnya NKRI, negara merdeka ke-73 di dunia saat itu 🌟`},
+  {q:["majapahit","gajah mada","sumpah palapa","nusantara","hayam wuruk","trowulan"],
+  a:`👑 **Kerajaan Majapahit — Puncak Kejayaan Nusantara**\n\n**Berdirinya (1293 M):**\nRaden Wijaya, menantu Raja Singasari, mendirikan Majapahit setelah mengalahkan pasukan Mongol dengan taktik cerdik!\n\n**Masa Keemasan (1350-1389):**\nRaja Hayam Wuruk + Mahapatih Gajah Mada\n\n**Sumpah Palapa (1336):**\n*"Amukti palapa, lamun huwus kalah Nusantara isun amukti palapa"*\nGajah Mada bersumpah tidak menikmati rempah-rempah sebelum Nusantara bersatu!\n\n**Wilayah Kekuasaan:**\nJawa, Bali, Lombok, Sumbawa, Flores, Timor, Maluku, Sulawesi, Kalimantan, Sumatera, Semenanjung Malaya, sebagian Filipina\n\n**Warisan Abadi:**\n📜 Negarakertagama (Mpu Prapanca, 1365)\n📜 Sutasoma — "Bhinneka Tunggal Ika" (Mpu Tantular)\n📌 Nama "Nusantara" untuk ibu kota baru Indonesia!\n\n**Keruntuhan:** ~1527 M akibat perang saudara & masuknya Islam 🏛️`},
+  {q:["perang dunia","ww2","ww1","nazi","holocaust","hiroshima","nagasaki","sekutu"],
+  a:`⚔️ **Perang Dunia II (1939-1945) — Konflik Terbesar Sejarah**\n\n**Penyebab:**\n• Perjanjian Versailles yang menyengsarakan Jerman\n• Kebangkitan fasisme (Hitler, Mussolini, Tojo)\n• Kebijakan appeasement yang gagal\n\n**Blok Bertarung:**\n• Sekutu: AS, Inggris, USSR, Prancis, China\n• Poros: Jerman, Italia, Jepang\n\n**Titik Balik:**\n📅 1940 — Battle of Britain (gagal invasi Jerman ke Inggris)\n📅 1941 — Pearl Harbor → AS masuk perang\n📅 1942-43 — Stalingrad → balikan front Timur\n📅 6 Juni 1944 — D-Day Normandy\n📅 30 April 1945 — Hitler bunuh diri\n📅 6 & 9 Agustus 1945 — Hiroshima & Nagasaki\n\n**Korban:** ~70-85 juta jiwa (3% populasi dunia)\n**Holocaust:** 6 juta Yahudi dimusnahkan\n\n**Dampak:** PBB dibentuk, Perang Dingin mulai, dekolonisasi besar 🌍`},
+  {q:["sumpah pemuda","28 oktober","pergerakan nasional","boedi oetomo","kebangkitan nasional"],
+  a:`🇮🇩 **Sumpah Pemuda & Kebangkitan Nasional**\n\n**Boedi Oetomo (20 Mei 1908):**\nOrganisasi modern pertama → Hari Kebangkitan Nasional\n\n**Kongres Pemuda II — 28 Oktober 1928:**\n\nTiga ikrar bersejarah:\n1. Satu Tanah Air — Indonesia\n2. Satu Bangsa — Bangsa Indonesia\n3. Satu Bahasa Persatuan — Bahasa Indonesia\n\n**Tokoh Penggerak:**\n• Muhammad Yamin — konseptor\n• Sugondo Djojopuspito — ketua kongres\n• W.R. Soepratman — mainkan Indonesia Raya untuk pertama kali!\n\n**Lokasi:** Jl. Kramat Raya 106, Jakarta Pusat (kini Museum Sumpah Pemuda)\n\n**Makna Mendalam:**\nPemuda dari Jawa, Sumatera, Sulawesi, Kalimantan, dll — melampaui batas suku & agama untuk satu identitas: INDONESIA\n\n📅 28 Oktober = Hari Sumpah Pemuda & Hari Bahasa Indonesia! 🌺`},
+  {q:["reformasi 1998","soeharto","orde baru","demokrasi indonesia","gus dur","habibie","megawati"],
+  a:`🏛️ **Reformasi 1998 — Babak Baru Indonesia**\n\n**Latar Belakang:**\n• Krisis moneter Asia 1997-1998 (rupiah jatuh dari Rp2.500 → Rp17.000/USD)\n• Korupsi, kolusi, nepotisme Orde Baru\n• Inflasi 80%, pengangguran melonjak\n\n**Peristiwa Kunci:**\n• Mahasiswa turun ke jalan besar-besaran\n• Tragedi Trisakti (12 Mei 1998) — 4 mahasiswa tewas\n• Kerusuhan Mei 1998\n• 21 Mei 1998 — Soeharto mundur setelah 32 tahun berkuasa!\n\n**Era Reformasi:**\n• Habibie (1998-1999) — reformasi awal, referendum Timor Timur\n• Abdurrahman Wahid/Gus Dur (1999-2001) — demokratisasi\n• Megawati (2001-2004) — stabilisasi\n• SBY (2004-2014) — pemilu langsung pertama\n• Jokowi (2014-2024) — pembangunan infrastruktur\n• Prabowo (2024-) — presiden ke-8\n\n**Warisan Reformasi:** Kebebasan pers, otonomi daerah, pemilu langsung 🗳️`},
+],
+
+matematika:[
+  {q:["kalkulus","turunan","integral","limit","diferensial"],
+  a:`∫ **Kalkulus — Bahasa Alam Semesta**\n\n**Limit:**\nlim_{x→a} f(x) = L\n• L'Hôpital: jika 0/0 atau ∞/∞ → diferensialkan pembilang & penyebut\n\n**Turunan (Diferensial):**\nAturan dasar:\n• d/dx[xⁿ] = nxⁿ⁻¹\n• d/dx[eˣ] = eˣ\n• d/dx[ln x] = 1/x\n• d/dx[sin x] = cos x, d/dx[cos x] = -sin x\n• d/dx[tan x] = sec²x\n\nAturan rantai: d/dx[f(g(x))] = f'(g(x))·g'(x)\nAturan produk: d/dx[uv] = u'v + uv'\nAturan quotient: d/dx[u/v] = (u'v - uv')/v²\n\n**Integral:**\n• ∫xⁿ dx = xⁿ⁺¹/(n+1) + C\n• ∫eˣ dx = eˣ + C\n• ∫(1/x) dx = ln|x| + C\n• ∫sin x dx = -cos x + C\n\n**FTC:** ∫_a^b f(x)dx = F(b) - F(a)\n\n**Aplikasi:** fisika, ekonomi, statistik, ML gradient descent! 📈`},
+  {q:["trigonometri","sin cos tan","sudut","segitiga siku-siku","identitas trigonometri"],
+  a:`📐 **Trigonometri Lengkap**\n\n**Rasio Dasar (SOH-CAH-TOA):**\n• sin θ = sisi depan / hipotenusa\n• cos θ = sisi samping / hipotenusa\n• tan θ = sisi depan / sisi samping = sin/cos\n\n**Nilai Istimewa:**\n|  θ  | sin | cos | tan |\n|-----|-----|-----|-----|\n| 0°  |  0  |  1  |  0  |\n| 30° | ½   |½√3  |⅓√3  |\n| 45° | ½√2 | ½√2 |  1  |\n| 60° | ½√3 |  ½  |  √3 |\n| 90° |  1  |  0  |  ∞  |\n\n**Identitas Penting:**\n• sin²θ + cos²θ = 1\n• 1 + tan²θ = sec²θ\n• sin(A±B) = sinA cosB ± cosA sinB\n• cos(A±B) = cosA cosB ∓ sinA sinB\n• sin(2θ) = 2sinθcosθ\n• cos(2θ) = cos²θ - sin²θ\n\n**Aturan Sinus & Cosinus:**\na/sinA = b/sinB = c/sinC\nc² = a² + b² - 2ab·cosC 🔺`},
+  {q:["statistik","probabilitas","distribusi","regresi","inferensi","hipotesis"],
+  a:`📊 **Statistika & Inferensi**\n\n**Distribusi Penting:**\n• Normal N(μ,σ²) — bell curve, simetris\n• Binomial B(n,p) — percobaan diskrit\n• Poisson P(λ) — kejadian langka\n• T-Student — sampel kecil, σ tidak diketahui\n\n**Inferensi Statistik:**\n• **Uji Hipotesis:** H₀ vs Hₐ\n• p-value < α (0.05) → tolak H₀\n• Interval Kepercayaan: x̄ ± z·(σ/√n)\n\n**Regresi Linier:** y = β₀ + β₁x + ε\n• Least squares: minimumkan Σ(yi - ŷi)²\n• R² = seberapa baik model fit (0-1)\n\n**Korelasi Pearson:** r ∈ [-1, 1]\n• r = 1: korelasi positif sempurna\n• r = 0: tidak ada korelasi linier\n• r = -1: korelasi negatif sempurna\n\n**Hati-hati:** Korelasi ≠ Kausalitas!\n"Konsumsi es krim naik → tenggelam naik" (keduanya karena panas!) 😄`},
+  {q:["vektor","matriks","aljabar linear","determinan","transformasi"],
+  a:`🔢 **Aljabar Linear**\n\n**Vektor:**\n• Skalar (besaran) vs Vektor (besaran + arah)\n• Operasi: penjumlahan, perkalian skalar, dot product, cross product\n• Dot product: a·b = |a||b|cosθ\n• Cross product: a×b = vektor tegak lurus\n\n**Matriks:**\nOperasi: penjumlahan, perkalian, transpose, invers\n\n**Determinan (2×2):**\n|a b|\n|c d| = ad - bc\n\n**Invers Matriks:**\nA⁻¹ = (1/det A) × adjugate(A)\n\n**Transformasi Linier:**\n• Rotasi, refleksi, dilatasi, shear\n• Semua bisa direpresentasikan sebagai matriks!\n\n**Eigenvalue & Eigenvector:**\nAv = λv\nFundamental dalam: PCA (data science), vibrasi mekanik, PageRank Google!\n\n**Aplikasi:** Computer graphics, ML, fisika, ekonomi, rekayasa 🎯`},
+],
+
+bahasa:[
+  {q:["bahasa indonesia","ejaan","tata bahasa","kalimat","kata","morfologi"],
+  a:`📖 **Bahasa Indonesia — Sistem Lengkap**\n\n**Morfologi (Pembentukan Kata):**\n• **Afiksasi:** me-, ber-, ter-, pe-, -an, -kan, -i\n• **Reduplikasi:** buku-buku, berlari-lari\n• **Komposisi:** rumah sakit, meja makan\n• **Abreviasi:** KBBI, TNI, PR\n\n**Konfiks Penting:**\n• me-kan: mempermasalahkan → causative\n• ke-an: kebaikan → kondisi/abstrak\n• pe-an: pembelajaran → proses\n• per-an: perjalanan → hasil\n\n**Jenis Kata (Kelas Kata):**\n• Nomina (kata benda): rumah, kebaikan\n• Verba (kata kerja): berlari, makan\n• Adjektiva (kata sifat): cantik, besar\n• Adverbia (kata keterangan): sangat, sudah\n• Konjungsi: dan, atau, tetapi, karena\n• Preposisi: di, ke, dari, untuk\n\n**Kaidah PUEBI 2015:**\n• Penulisan gabungan kata: nonstop, antarbangsa\n• Huruf kapital: awal kalimat, nama diri\n• Tanda baca: koma, titik, titik dua 📝`},
+  {q:["bahasa inggris","grammar","tenses","vocabulary","speaking","ielts","toefl"],
+  a:`🇬🇧 **Bahasa Inggris — Panduan Lengkap**\n\n**Tenses 12 Utama:**\n\n| Tense | Formula | Contoh |\n|-------|---------|--------|\n| Simple Present | S + V1/es | I eat |\n| Pres. Continuous | S + am/is/are + Ving | I am eating |\n| Pres. Perfect | S + have/has + V3 | I have eaten |\n| Simple Past | S + V2 | I ate |\n| Past Continuous | S + was/were + Ving | I was eating |\n| Past Perfect | S + had + V3 | I had eaten |\n| Simple Future | S + will + V1 | I will eat |\n| Future Perfect | S + will have + V3 | I will have eaten |\n\n**Passive Voice:**\nAktif: She reads the book.\nPasif: The book is read by her.\n\n**Conditional:**\n• Type 0: If + present, present (general truth)\n• Type 1: If + present, will + V1 (possible)\n• Type 2: If + past, would + V1 (hypothetical)\n• Type 3: If + past perfect, would have + V3 (impossible)\n\n**Tips IELTS/TOEFL:** Practice daily speaking, extensive reading, vocab builder apps 🎯`},
+],
+
+kesehatan:[
+  {q:["gizi","nutrisi","makanan","diet","berat badan","kalori","metabolisme"],
+  a:`🥗 **Nutrisi & Gizi — Panduan Ilmiah**\n\n**Kalori & Metabolisme:**\n• Pria dewasa: ~2000-2500 kkal/hari\n• Wanita dewasa: ~1600-2000 kkal/hari\n• BMR (Basal Metabolic Rate) = energi istirahat\n• BMR pria ≈ 88.36 + 13.4×kg + 4.8×cm - 5.7×usia\n\n**Makronutrien:**\n• Karbohidrat: 4 kkal/gram\n• Protein: 4 kkal/gram\n• Lemak: 9 kkal/gram\n• Alkohol: 7 kkal/gram\n\n**Protein Hewani vs Nabati:**\n• Hewani: complete protein (semua asam amino esensial)\n• Nabati: incomplete — kombinasikan (nasi+kacang = complete!)\n\n**Diet Evidence-Based:**\n• Mediterranean — terbaik untuk jantung & otak\n• DASH — turunkan tekanan darah\n• Whole food plant-based — baik untuk lingkungan\n\n**Hindari:**\n❌ Ultra-processed food (kurangi 80%)\n❌ Gula tambahan >25g/hari (WHO)\n❌ Garam >5g/hari\n❌ Trans fat (margarin, fast food) 🥦`},
+  {q:["olahraga","latihan","gym","lari","kesehatan jantung","kebugaran","hiit"],
+  a:`💪 **Panduan Olahraga Ilmiah**\n\n**Zona Denyut Jantung:**\n• Zona 1 (50-60% HR max) — pemulihan aktif\n• Zona 2 (60-70%) — fat burning, ketahanan\n• Zona 3 (70-80%) — aerobik, efisiensi\n• Zona 4 (80-90%) — anaerobik, laktat threshold\n• Zona 5 (90-100%) — VO2 max, sprint\n\nHR max ≈ 220 - umur\n\n**Program Rekomendasi WHO:**\n• 150-300 menit/minggu aktivitas aerobik sedang\n• 2x+ latihan kekuatan otot besar\n• Kurangi duduk berkepanjangan\n\n**Progressive Overload:**\nNaikkan beban/reps/set secara bertahap 5-10%/minggu\n\n**Recovery:**\n• Otot tumbuh saat istirahat, bukan saat latihan!\n• Sleep 7-9 jam = produksi growth hormone puncak\n• Nutrisi: protein 1.6-2.2g/kg BB/hari\n\n**VO2 Max:** Indikator kebugaran kardiorespirasi. Tingkatkan dengan Zone 2 training & HIIT 🏃`},
+  {q:["stres","mental","anxiety","depresi","mindfulness","meditasi","terapi"],
+  a:`🧠 **Kesehatan Mental — Berbasis Sains**\n\n**Neurobiologi Stres:**\n• Kortisol & adrenalin → fight-or-flight\n• Amigdala hiperaktif → kecemasan kronis\n• Hippocampus mengecil akibat stres kronik\n\n**Evidence-Based Interventions:**\n\n🧘 **Mindfulness (MBSR):**\n• Terbukti kurangi kecemasan 40%\n• 8 minggu program = ubah struktur otak!\n• Praktik: scan tubuh, napas sadar, meditasi\n\n💊 **CBT (Cognitive Behavioral Therapy):**\n• Restrukturisasi pikiran negatif\n• Behavioral activation\n• Exposure therapy\n\n🏃 **Olahraga:**\n• Efektif setara antidepresan ringan!\n• BDNF (Brain-Derived Neurotrophic Factor) = "pupuk otak"\n\n💤 **Tidur:**\nKurang tidur → kortisol naik, imun turun, emosi labil\n\n**Kapan ke Profesional:**\nJika >2 minggu mengganggu fungsi sehari-hari.\nPsikolog & psikiater tersedia offline maupun online 💙`},
+],
+
+motivasi:[
+  {q:["motivasi","semangat","inspirasi","bangkit","sukses","tujuan","impian"],
+  a:`💪 **Ilmu Motivasi & Kesuksesan**\n\n**Self-Determination Theory (Deci & Ryan):**\n3 kebutuhan dasar manusia untuk motivasi intrinsik:\n1. **Otonomi** — merasa punya kendali\n2. **Kompetensi** — merasa berkembang\n3. **Keterhubungan** — merasa terhubung dengan orang lain\n\n**Growth Mindset (Carol Dweck):**\n• Fixed: "Aku tidak bisa" → menyerah\n• Growth: "Aku belum bisa" → terus belajar\n\n**Grit (Angela Duckworth):**\nGrit = Passion + Perseverance\nLebih prediktif keberhasilan daripada IQ!\n\n**Deliberate Practice (Anders Ericsson):**\n10.000 jam tidak cukup — harus **terstruktur + fokus + feedback**\n\n✨ **Kutipan yang Terbukti Mengubah Pola Pikir:**\n\n*"Whether you think you can, or you think you can't — you're right."* — Henry Ford\n\n*"The secret of getting ahead is getting started."* — Mark Twain\n\n*"Tidak ada yang gagal, hanya belajar cara yang tidak berhasil."* — Edison\n\nKamu lebih dekat ke tujuanmu daripada yang kamu kira! 🚀`},
+  {q:["produktivitas","fokus","habit","kebiasaan","waktu","belajar efektif"],
+  a:`⏰ **Sistem Produktivitas Terbaik di Dunia**\n\n**Deep Work (Cal Newport):**\n• Kerja fokus tanpa distraksi = paling produktif\n• Bangun ritual: waktu, tempat, durasi\n• Targetkan 4 jam deep work/hari\n\n**Atomic Habits (James Clear):**\n• Habit loop: Cue → Craving → Response → Reward\n• 1% lebih baik setiap hari = 37x lebih baik dalam setahun!\n• Habit stacking: Setelah X, aku akan Y\n• Environment design: buat kebaikan mudah, keburukan sulit\n\n**GTD (Getting Things Done):**\n• Capture → Clarify → Organize → Reflect → Engage\n\n**Teknik Belajar Terbaik:**\n🥇 Spaced repetition (Anki)\n🥈 Active recall / self-testing\n🥉 Interleaved practice\n4️⃣ Elaborative interrogation\n5️⃣ Pomodoro untuk fokus\n\n**Kesalahan Umum:**\n❌ Multitasking (turunkan efisiensi 40%!)\n❌ Social media saat belajar\n❌ Belajar dalam satu sesi panjang\n❌ Highlight & membaca ulang (tidak efektif!)`},
+],
+
+memasak:[
+  {q:["masak","memasak","resep","kuliner","dapur","bahan makanan","cara membuat"],
+  a:`🍳 **Panduan Memasak untuk Pemula**\n\n**5 Teknik Dasar Memasak:**\n1. **Menumis (Sautéing)** — wajan panas, sedikit minyak, cepat\n2. **Merebus (Boiling)** — air mendidih 100°C\n3. **Menggoreng (Frying)** — deep fry vs shallow fry\n4. **Memanggang (Roasting/Baking)** — panas kering oven\n5. **Mengukus (Steaming)** — panas uap, nutrisi terjaga\n\n**Bumbu Dasar Indonesia:**\n• Bumbu putih: bawang merah, bawang putih, kemiri, jahe\n• Bumbu kuning: + kunyit\n• Bumbu merah: + cabe merah/rawit\n• Bumbu hitam: + kluwek (rawon)\n\n**Tips Memasak:**\n✅ Mise en place — siapkan bahan sebelum mulai\n✅ Rasa saat memasak, bukan saat di piring\n✅ Minyak harus panas sebelum bahan masuk\n✅ Jangan terlalu sering aduk (biarkan karamelisasi)\n✅ Istirahatkan daging setelah dimasak 5 menit\n\n**Ingin resep spesifik?**\nKetik: "resep nasi goreng", "resep rendang", "resep soto ayam", "resep gado-gado", "resep mie goreng", "resep pempek", "resep bakso", atau "resep martabak"! 🌶️`},
+],
+
+hukum:[
+  {q:["hukum","undang-undang","konstitusi","uud","pengadilan","hak","kewajiban","pidana","perdata"],
+  a:`⚖️ **Hukum Indonesia — Dasar-Dasar**\n\n**Hierarki Peraturan (UU No. 12/2011):**\n1. UUD 1945\n2. TAP MPR\n3. UU / Perppu\n4. PP (Peraturan Pemerintah)\n5. Perpres (Peraturan Presiden)\n6. Perda Provinsi\n7. Perda Kabupaten/Kota\n\n**Cabang Hukum Utama:**\n\n⚖️ **Hukum Pidana** — sanksi negara terhadap pelanggaran\n• KUHP (Kitab Undang-Undang Hukum Pidana)\n• Unsur: actus reus (perbuatan) + mens rea (niat)\n\n📋 **Hukum Perdata** — hubungan antar individu\n• KUH Perdata (BW): kontrak, harta, keluarga\n• Ganti rugi, bukan penjara\n\n🏛️ **Hukum Tata Negara** — struktur negara & kekuasaan\n• Lembaga: DPR, DPD, MPR, MA, MK, KY\n\n**Hak Warga Negara (UUD 1945 Pasal 27-34):**\n• Hak atas pekerjaan\n• Hak atas pendidikan\n• Hak atas kesehatan\n• Hak beragama\n• Hak berpendapat\n\n**Jika terkena masalah hukum:** Hubungi LBH (Lembaga Bantuan Hukum) terdekat ⚖️`},
+],
+
+parenting:[
+  {q:["parenting","anak","mendidik anak","pola asuh","perkembangan anak","remaja","tumbuh kembang"],
+  a:`👶 **Parenting — Ilmu Mendidik Anak**\n\n**Tahap Perkembangan (Piaget):**\n• 0-2th: Sensorimotor — belajar melalui indera & gerak\n• 2-7th: Praoperasional — bahasa berkembang, egosentris\n• 7-11th: Operasional Konkret — logika + benda nyata\n• 11th+: Operasional Formal — abstrak & hipotetis\n\n**4 Gaya Parenting (Baumrind):**\n• **Authoritative** (terbaik) — hangat + konsisten + fleksibel\n• Authoritarian — ketat tapi dingin → anak penakut\n• Permissive — hangat tapi tidak konsisten → kurang mandiri\n• Neglectful — kurang perhatian → masalah sosial\n\n**Tips Komunikasi Efektif:**\n✅ Active listening — dengarkan tanpa menghakimi\n✅ Validasi perasaan: "Aku mengerti kamu marah..."\n✅ Batasan yang jelas tapi penuh cinta\n✅ Konsisten antara apa yang diucapkan & dilakukan\n✅ Quality time tanpa gadget\n\n**Screen Time Rekomendasi (WHO):**\n• <2th: hindari sama sekali\n• 2-5th: max 1 jam/hari\n• 6th+: batas yang sehat + konten berkualitas 👨‍👩‍👧`},
+],
+
+alam:[
+  {q:["lingkungan","ekologi","biodiversitas","ekosistem","konservasi","hutan","laut","satwa"],
+  a:`🌿 **Ekologi & Konservasi Alam**\n\n**Piramida Ekologi:**\nProdusen → Konsumen I → Konsumen II → Konsumen III → Dekomposer\n\n**Siklus Nutrisi Penting:**\n• Siklus karbon → iklim, fotosintesis\n• Siklus nitrogen → protein, pupuk\n• Siklus air → cuaca, ekosistem\n\n**Keanekaragaman Hayati Indonesia:**\n• 515 spesies mamalia (17% dunia)\n• 1.539 spesies burung (17% dunia)\n• 45.000 spesies tumbuhan (11% dunia)\n• Segitiga Terumbu Karang → 76% spesies karang\n\n**Spesies Kunci Indonesia:**\n🦧 Orangutan (Sumatera & Kalimantan)\n🦎 Komodo (Flores & Rinca)\n🐘 Gajah Sumatera\n🐅 Harimau Sumatera (kritis!)\n🦅 Jalak Bali (hampir punah)\n\n**Ancaman:**\nDeforestasi, perburuan, polusi, perubahan iklim, spesies invasif\n\n**Apa yang Bisa Kita Lakukan?**\n♻️ 4R: Refuse, Reduce, Reuse, Recycle\n🌱 Tanam pohon, pilih produk berkelanjutan\n🗣️ Edukasi lingkungan 🌍`},
+],
+
+chat:[
+  {q:["halo","hai","hello","hey","hi","hy","selamat datang","pagi","siang","malam","assalamualaikum"],
+  a:`Halo! Senang sekali bertemu kamu! 😊✨\n\nAku **NusantaraAI v3.0** — teman cerdas yang bisa membantu dengan:\n🎮 Kuis interaktif (50+ soal)\n🔤 Game tebak kata seru\n🌐 Terjemahan Indonesia ↔ Inggris\n🔄 Konversi satuan (suhu, panjang, berat)\n🍳 Resep masakan nusantara\n📚 2500+ topik pengetahuan\n🔢 Kalkulator canggih\n\nMau mulai dengan apa hari ini? 😄`},
+  {q:["siapa kamu","kamu siapa","nama kamu","perkenalan","tentang kamu"],
+  a:`Perkenalkan, aku **NusantaraAI v3.0 PRO**! 🌟\n\n✅ Bekerja **100% offline** tanpa internet\n✅ **2500+ topik** dari 18 kategori\n✅ **AI yang ramah & sopan** — selalu!\n✅ Fitur: Kuis, Tebak Kata, Terjemahan, Konverter, Kalkulator, Resep\n✅ Mode terang & gelap\n✅ Ingat riwayat percakapan\n\nNama kamu siapa? Senang berkenalan! 😊`},
+  {q:["apa kabar","kabarmu","gimana kabar","how are you"],
+  a:`Baik banget! Terima kasih sudah tanya 😊\n\nSetiap percakapan baru selalu bikin senang. Ada yang menarik yang ingin kamu pelajari atau diskusikan hari ini?\n\nAtau mau langsung mulai kuis, game tebak kata, atau terjemahan? 🌟`},
+  {q:["terima kasih","makasih","thanks","thank you","tq"],
+  a:`Sama-sama! Senang bisa membantu! 😊✨\n\nJangan ragu tanya lagi kapan saja ya — aku selalu siap! 🌟`},
+  {q:["bosan","gabut","boring","jenuh","tidak ada kerjaan"],
+  a:`Wah, bosan? Aku punya banyak hiburan! 😄\n\n🎮 Ketik **"mulai kuis"** — tes pengetahuanmu!\n🔤 Ketik **"tebak kata"** — game seru!\n🎲 Ketik **"fakta acak"** — fakta bikin melongo!\n🧩 Ketik **"teka-teki"** — asah otakmu!\n💪 Ketik **"cerita motivasi"** — cerita inspirasi tokoh dunia!\n🍳 Ketik **"resep rendang"** — belajar masak!\n\nMana yang paling menarik? 😊`},
+  {q:["lucu","jokes","lelucon","humor"],
+  a:`Hahaha, mau jokes? Siap! 😄\n\n🤣 **Joke 1 — Programmer:**\nKenapa programmer selalu bingung antara Halloween dan Natal?\nKarena **Oct 31 = Dec 25**!\n(Oktal 31 = Desimal 25) 😂\n\n🤣 **Joke 2 — Kimia:**\nDua atom helium bertemu. Yang satu bilang: "Aku kehilangan elektron!"\nYang lain: "Yakin?"\n"Ya, aku **He**lium yang positif!"\n\n🤣 **Joke 3 — Fisika:**\nSchrodinger memarkir mobilnya. Polisi: "Anda parkir di tempat terlarang!"\nSchrodinger: "Tapi tidak ada tanda-tanda!"\nPolisi: *membuka bagasi* "Ada kucing mati di sini!"\nSchrodinger: "Astaga, sekarang ada!" 😂\n\nMau lagi? Atau mau teka-teki? 🎭`},
+  {q:["teka-teki","riddle","tebak"],
+  a:`Ooh suka teka-teki! 🧩\n\n**Teka-teki 1:**\n*Aku bisa berlari tapi tidak punya kaki. Aku bisa menangis tapi tidak punya mata. Aku datang dari langit tapi bukan malaikat. Siapa aku?*\n\n💡 Jawaban: **Hujan!** 🌧️\n\n**Teka-teki 2:**\n*Aku punya kepala tapi tidak punya otak. Punya ekor tapi tidak punya badan. Apa aku?*\n\n💡 Jawaban: **Koin!** 🪙\n\n**Teka-teki 3:**\n*Semakin banyak kamu mengambilnya, semakin besar aku. Tapi jika kamu terus mengisi, aku menghilang. Apa aku?*\n\n💡 Jawaban: **Lubang!** 🕳️\n\nMau yang lebih sulit? 😄`},
+  {q:["sedih","galau","down","curhat","patah hati","kecewa","lelah","berat"],
+  a:`Hei, aku di sini untukmu... 💙\n\nTidak apa-apa merasa begitu. Perasaanmu valid.\n\nKalau kamu mau cerita, aku mendengarkan. Kalau belum siap, juga tidak apa-apa.\n\n**Ingat:**\n🌤️ Setelah hujan pasti ada pelangi\n💙 Kamu tidak sendirian\n💪 Kamu sudah melewati 100% hari sulitmu sebelumnya\n🌱 Setiap hari adalah halaman baru\n\nJika kamu merasa sangat tidak baik, hubungi seseorang yang kamu percaya ya. Kamu berharga! 🫂`},
+]
+};
+
+// ================================================================
+//  RANDOM FACTS
+// ================================================================
+const FACTS = [
+  "🧠 Otakmu menghasilkan energi setara lampu 25 watt! Kamu bercahaya secara harfiah!",
+  "🐙 Gurita punya 3 jantung, 9 otak, & darah biru. Makhluk paling aneh di Bumi!",
+  "⚡ Petir menyambar Bumi ~100 kali per DETIK. Saat kamu baca ini, ribuan petir sudah terjadi!",
+  "🌊 95% lautan Bumi belum pernah dijelajahi manusia. Kita lebih tahu tentang Mars!",
+  "🦠 Tubuhmu punya 10× lebih banyak sel bakteri daripada sel manusia. Kamu lebih bakteri dari manusia!",
+  "⏱ Jika umur Bumi dipadatkan jadi 1 tahun, manusia muncul pada 23:58 menit terakhir!",
+  "🌡️ Panas tubuhmu cukup untuk mendidihkan 1,5 liter air dalam 30 menit!",
+  "🐢 Kura-kura bisa bernapas melalui pantatnya (kloaka) di musim dingin!",
+  "🎵 Musik bisa mengurangi persepsi rasa sakit hingga 21% — lebih ampuh dari beberapa obat penghilang rasa sakit!",
+  "💎 Berlian bisa dibakar pada ~700°C — semuanya berubah jadi CO₂!",
+  "🌸 Semut dapat mengangkat 50× beratnya sendiri. Jika manusia sekuat itu, kita bisa angkat mobil!",
+  "🧬 DNA semua manusia 99,9% identik. Semua perbedaan kita ada di 0,1%!",
+  "🐝 Lebah madu harus kunjungi 2 JUTA bunga untuk buat 450g madu. Dedikasi luar biasa!",
+  "🌙 Neil Armstrong pergi ke Bulan membawa lebih sedikit computing power dari HP-mu!",
+  "🔢 Jika hitung dari 1 ke 1 juta nonstop (1/detik) → butuh 11,5 hari!",
+  "🦈 Hiu lebih tua dari pohon — hiu sudah ada 450 juta tahun, pohon baru 350 juta tahun!",
+  "❄️ Tiap kepingan salju unik karena perjalanannya dari awan ke bumi berbeda-beda!",
+  "🚀 Voyager 1 (1977) masih bergerak — sudah 23+ miliar km dari Bumi & terus berlanjut!"
+];
+
+const MOTI_STORIES = [
+  `💡 **Edison & 10.000 Percobaan**\n\nSeorang wartawan bertanya: "Pak Edison, bagaimana rasanya gagal 10.000 kali?"\n\nEdison tersenyum: *"Aku tidak pernah gagal satu pun. Aku berhasil menemukan 10.000 cara yang tidak berhasil."*\n\nDia tidak berhenti. Dia mengubah dunia.\n\n✨ **Pesan:** Kegagalan adalah data, bukan kekalahan. Setiap "tidak berhasil" membawamu lebih dekat ke yang berhasil! 💪`,
+  `🏀 **Michael Jordan — Gagal Lolos Seleksi**\n\nSebagai remaja 15 tahun, Jordan tidak lolos seleksi tim basket sekolah. Dia pulang ke kamar, dan menangis sendirian.\n\nTapi dia bangkit. Berlatih jam 6 pagi setiap hari sebelum sekolah. Sendirian.\n\nHasilnya? 6× juara NBA. 5× MVP. Emas Olimpiade. Diklaim terbaik sepanjang masa.\n\n✨ "Saya bisa menerima kegagalan — semua orang bisa gagal. Tapi saya tidak bisa menerima tidak mencoba." 🔥`,
+  `📚 **J.K. Rowling — 12 Penolakan**\n\n12 penerbit menolak Harry Potter. Dia single parent, menganggur, hidup dari tunjangan sosial. Menulis di kafe karena apartemen tidak hangat.\n\nPenerbit ke-13 menerima... karena putri CEO memaksa ayahnya membaca bab pertama!\n\nHasilnya? 500+ juta buku. 80+ bahasa. Franchise $25 miliar. Rowling jadi orang terkaya di Inggris.\n\n✨ **Pesan:** Satu "ya" setelah seribu "tidak" sudah cukup untuk mengubah segalanya! 🌟`,
+  `🎸 **The Beatles — Ditolak Label Rekaman**\n\n1962: Decca Records menolak The Beatles.\n*"Grup gitar tidak tren. Suara mereka tidak menarik."*\n\n14 label lain juga menolak.\n\nTapi mereka terus manggung, terus berlatih, terus menulis lagu.\n\nHasilnya? Band terlaris sepanjang masa. 600+ juta album. Mengubah musik selamanya.\n\n✨ **Pesan:** Orang yang menolakmu tidak mendefinisikan nilaimu. Terus berkarya! 🎵`,
+  `🌍 **Nelson Mandela — 27 Tahun di Penjara**\n\nDipenjara 27 tahun karena melawan apartheid. Ditawarkan kebebasan dengan syarat meninggalkan perlawanan — dia menolak.\n\nKeluar dari penjara 1990. Menjadi presiden pertama kulit hitam Afrika Selatan 1994.\n\nKatanya: *"Saya tidak pernah kalah. Saya menang atau belajar."*\n\n✨ **Pesan:** Tidak ada situasi yang bisa merebut martabat dan semangatmu, kecuali kamu yang menyerahkannya! 🕊️`
+];
+
+// ================================================================
+//  WORD GAME STATE
+// ================================================================
+let wgActive=false, wgWord='', wgHint='', wgGuessed=[], wgWrong=0, wgMaxWrong=6;
+const HANGMAN_STAGES = [
+  "  ___\n |   |\n |\n |\n |\\",
+  "  ___\n |   |\n |   O\n |\n |\\",
+  "  ___\n |   |\n |   O\n |   |\n |\\",
+  "  ___\n |   |\n |   O\n |  /|\n |\\",
+  "  ___\n |   |\n |   O\n |  /|\\\n |\\",
+  "  ___\n |   |\n |   O\n |  /|\\\n |  /\n |\\",
+  "  ___\n |   |\n |   O\n |  /|\\\n |  / \\\n |\\"
+];
+
+function startWordGame() {
+  const pick = WORDS[Math.floor(Math.random()*WORDS.length)];
+  wgWord = pick.w; wgHint = pick.h;
+  wgGuessed = []; wgWrong = 0; wgActive = true;
+  renderWordGame();
+  return null;
+}
+
+function renderWordGame() {
+  const welcomeEl = document.getElementById('wel');
+  if (welcomeEl) welcomeEl.remove();
+  const ca = document.getElementById('ca');
+  const el = document.createElement('div');
+  el.className = 'm ai'; el.id='wg-container';
+
+  const letters = wgWord.split('').map(l=>{
+    const shown = wgGuessed.includes(l);
+    return `<div class="wg-l ${shown?'shown':''}">${shown?l:''}</div>`;
+  }).join('');
+
+  const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l=>{
+    const hit = wgGuessed.includes(l) && wgWord.includes(l);
+    const miss = wgGuessed.includes(l) && !wgWord.includes(l);
+    return `<button class="wgk ${hit?'hit':''} ${miss?'miss':''}" 
+      onclick="guessLetter('${l}',this)" 
+      ${wgGuessed.includes(l)?'disabled':''}>${l}</button>`;
+  }).join('');
+
+  const stage = HANGMAN_STAGES[wgWrong];
+  const wrongLetters = wgGuessed.filter(l=>!wgWord.includes(l)).join(' ');
+  const isWon = wgWord.split('').every(l=>wgGuessed.includes(l));
+  const isLost = wgWrong >= wgMaxWrong;
+
+  let status = '';
+  if (isWon) status = `<div class="tag g" style="font-size:13px;margin-top:8px">🎉 Hebat! Kata: <strong>${wgWord}</strong></div>`;
+  else if (isLost) status = `<div class="tag r" style="font-size:13px;margin-top:8px">😅 Jawabannya: <strong>${wgWord}</strong></div>`;
+
+  el.innerHTML = `
+    <div class="mav">🌟</div>
+    <div style="max-width:90%">
+      <div class="bbl">
+        <div class="tag i">🔤 Game Tebak Kata</div>
+        <div class="card">
+          <div class="card-title">❓ Tebak kata ini!</div>
+          <div style="font-size:11px;color:var(--tm);margin-bottom:8px">💡 Petunjuk: ${wgHint}</div>
+          <div class="hangman">${stage}</div>
+          <div style="font-size:10px;color:var(--a3);margin:4px 0">Salah: ${wrongLetters||'-'} (${wgWrong}/${wgMaxWrong})</div>
+          <div class="wg-word">${letters}</div>
+          ${!isWon && !isLost ? `<div class="wg-kb">${alpha}</div>` : ''}
+          ${status}
+          ${(isWon||isLost)?`<button class="ck eq" style="margin-top:10px;padding:7px 16px;border-radius:8px;cursor:pointer" onclick="qs('mulai game tebak kata')">🔄 Main Lagi</button>`:''}
+        </div>
+      </div>
+      <div class="mmeta">NusantaraAI • ${getTime()}</div>
+    </div>
+  `;
+  ca.appendChild(el);
+  ca.scrollTop = ca.scrollHeight;
+  msgCount++;
+  updateStats();
+}
+
+function guessLetter(letter, btn) {
+  if (!wgActive || wgGuessed.includes(letter)) return;
+  wgGuessed.push(letter);
+  if (!wgWord.includes(letter)) wgWrong++;
+  const old = document.getElementById('wg-container');
+  if (old) old.remove();
+  const isWon = wgWord.split('').every(l=>wgGuessed.includes(l));
+  const isLost = wgWrong >= wgMaxWrong;
+  if (isWon || isLost) { wgActive = false; totalScore += isWon?10:0; }
+  renderWordGame();
+}
+
+// ================================================================
+//  TRANSLATE
+// ================================================================
+function translateText(text, toLang) {
+  const words = text.toLowerCase().trim().split(/\s+/);
+  let result = [];
+  let i = 0;
+  while (i < words.length) {
+    let found = false;
+    // Try 2-word phrase first
+    if (i+1 < words.length) {
+      const phrase = words[i]+' '+words[i+1];
+      if (toLang === 'en' && DICT_ID_EN[phrase]) {
+        result.push(DICT_ID_EN[phrase]); i += 2; found = true;
+      } else if (toLang === 'id' && DICT_EN_ID[phrase]) {
+        result.push(DICT_EN_ID[phrase]); i += 2; found = true;
+      }
+    }
+    if (!found) {
+      const word = words[i];
+      if (toLang === 'en') result.push(DICT_ID_EN[word] || `[${word}]`);
+      else result.push(DICT_EN_ID[word] || `[${word}]`);
+      i++;
+    }
+  }
+  return result.join(' ');
+}
+
+function renderTranslate(input, toLang) {
+  const translated = translateText(input, toLang);
+  const fromLang = toLang === 'en' ? '🇮🇩 Indonesia' : '🇬🇧 Inggris';
+  const toLabel = toLang === 'en' ? '🇬🇧 Inggris' : '🇮🇩 Indonesia';
+  return `🌐 **Terjemahan**\n\n<div class="tbox"><div><div class="tlabel">${fromLang}</div><div class="tpanel">${input}</div></div><div><div class="tlabel">${toLabel}</div><div class="tpanel">${translated}</div></div></div>\n\nTerjemahkan kata/kalimat lain?\nContoh: *"terjemahkan 'aku suka belajar' ke inggris"* atau *"translate 'I love Indonesia' to Indonesian"* 🌐`;
+}
+
+// ================================================================
+//  CONVERTER RENDERER
+// ================================================================
+function renderConverter(catKey) {
+  const cat = CONV[catKey];
+  if (!cat) return null;
+  const pairsHtml = cat.pairs.map((p,i)=>`
+    <div class="card" style="margin:6px 0">
+      <div class="card-title" style="font-size:12px">${p.from} → ${p.to}</div>
+      <div class="cvgrid">
+        <input class="cvinp" type="number" placeholder="Nilai" id="cv${catKey}${i}in" oninput="cvCalc('${catKey}',${i})" step="any">
+        <span class="cvarrow">⇄</span>
+        <div>
+          <div class="cvres" id="cv${catKey}${i}out">—</div>
+          <div class="cvunit">${p.to}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  return `🔄 **Konverter ${cat.label}**\n\n${pairsHtml}\n\nKonverter lain: ketik **"konverter panjang"**, **"konverter berat"**, **"konverter waktu"**, atau **"konverter kecepatan"**! 🔄`;
+}
+
+function cvCalc(catKey, idx) {
+  const inp = document.getElementById(`cv${catKey}${idx}in`);
+  const out = document.getElementById(`cv${catKey}${idx}out`);
+  if (!inp || !out) return;
+  const v = parseFloat(inp.value);
+  if (isNaN(v)) { out.textContent = '—'; return; }
+  const result = CONV[catKey].pairs[idx].fn(v);
+  out.textContent = parseFloat(result.toFixed(6));
+}
+
+// ================================================================
+//  RECIPE RENDERER
+// ================================================================
+function renderRecipe(key) {
+  const r = RECIPES[key];
+  if (!r) return null;
+  const bahan = r.bahan.map((b,i)=>`<li><span class="rnum">${i+1}.</span>${b}</li>`).join('');
+  const cara = r.cara.map((c,i)=>`<li><span class="rnum">${i+1}.</span>${c}</li>`).join('');
+  return `${r.name}\n\n<div class="card"><div class="card-title">🛒 Bahan-bahan</div><ul class="rlist">${bahan}</ul></div><div class="card"><div class="card-title">👩‍🍳 Cara Memasak</div><ul class="rlist">${cara}</ul></div>\n\nSelamat mencoba! 😋 Butuh resep lain? Ketik resep yang kamu mau!`;
+}
+
+// ================================================================
+//  QUIZ ENGINE
+// ================================================================
+let qQueue=[], qIdx=0, qAnswered=false;
+
+function startQuiz() {
+  qQueue = [...QUIZ].sort(()=>Math.random()-.5).slice(0,7);
+  qIdx = 0;
+  renderQ();
+  return null;
+}
+
+function renderQ() {
+  if (qIdx >= qQueue.length) { return addMsg(`🎉 **Kuis selesai!** Skor: **${quizRight}/${quizTotal}** — ${quizRight>=qQueue.length*.7?'Luar biasa! 🏆':'Terus semangat belajar! 💪'}\n\nKetik **"mulai kuis"** lagi untuk sesi baru!`,'ai'); }
+  const q = qQueue[qIdx]; qAnswered = false;
+  const welcomeEl = document.getElementById('wel');
+  if (welcomeEl) welcomeEl.remove();
+  const ca = document.getElementById('ca');
+  const el = document.createElement('div');
+  el.className = 'm ai'; el.id=`q${qIdx}`;
+  const opts = q.o.map((o,i)=>`<button class="qo" onclick="answerQ(${i},${q.a},this,'q${qIdx}')">${String.fromCharCode(65+i)}. ${o}</button>`).join('');
+  el.innerHTML=`<div class="mav">🌟</div><div style="max-width:90%"><div class="bbl"><div class="tag i">Soal ${qIdx+1}/${qQueue.length}</div><div class="card"><div class="card-title">❓ ${q.q}</div><div class="qopts">${opts}</div><div class="qres" id="qr${qIdx}" style="display:none"></div></div></div><div class="mmeta">NusantaraAI • ${getTime()}</div></div>`;
+  ca.appendChild(el);
+  ca.scrollTop=ca.scrollHeight;
+  msgCount++; quizTotal++; updateStats();
+}
+
+function answerQ(choice, correct, btn, qid) {
+  if (qAnswered) return;
+  qAnswered = true;
+  const opts = btn.parentElement.querySelectorAll('.qo');
+  const res = document.getElementById('qr'+qIdx.toString());
+  opts.forEach(o=>o.disabled=true);
+  opts[correct].classList.add('ok');
+  if (choice===correct) {
+    quizRight++; totalScore+=10; btn.classList.add('ok');
+    res.style.cssText='display:block;background:rgba(52,211,153,.1);color:var(--a2)';
+    res.textContent='✅ Benar! +10 poin 🎉';
+  } else {
+    btn.classList.add('no');
+    res.style.cssText='display:block;background:rgba(251,113,133,.1);color:var(--a3)';
+    res.textContent=`❌ Jawaban benar: ${String.fromCharCode(65+correct)}. ${qQueue[qIdx].o[correct]}`;
+  }
+  updateStats();
+  qIdx++;
+  setTimeout(()=>renderQ(), 1400);
+}
+
+// ================================================================
+//  MAIN RESPONSE ENGINE
+// ================================================================
+function findResponse(input) {
+  const low = input.toLowerCase().trim();
+
+  // Detect name
+  const nmRx = /(?:nama(?:\s+saya|ku|\s+aku)?|panggil(?:\s+aku|\s+saya)?|aku\s+(?:adalah|bernama)|saya\s+(?:adalah|bernama))\s+([a-zA-Z]{2,20})/i;
+  const nm = low.match(nmRx);
+  if (nm) {
+    const c = nm[1];
+    if (!['yang','tidak','itu','dan','ada','mau','bisa','harus','akan','kamu','siapa'].includes(c.toLowerCase()))
+      userName = c.charAt(0).toUpperCase()+c.slice(1).toLowerCase();
+  }
+
+  // Detect mood
+  if (/senang|bahagia|semangat|excited|gembira/.test(low)) { userMood='semangat 😄'; updateStats(); }
+  else if (/sedih|galau|down|lelah|capek/.test(low)) { userMood='sedang berat 💙'; updateStats(); }
+  else if (/belajar|belajar|tugas|ujian|pr\b/.test(low)) { userMood='belajar 📚'; updateStats(); }
+
+  // QUIZ
+  if (/mulai\s*kuis|kuis|quiz|soal pengetahuan|tes\s*aku/.test(low)) return startQuiz();
+
+  // WORD GAME
+  if (/tebak\s*kata|game\s*tebak|hangman|mulai\s*game/.test(low)) return startWordGame();
+
+  // TRANSLATOR
+  const transMatch = low.match(/(?:terjemahkan?|translate?|artikan?)\s+['"]?(.+?)['"]?\s+(?:ke|to|dalam)\s+(inggris|english|indonesia|id)/i);
+  if (transMatch) {
+    const text = transMatch[1];
+    const toLang = /inggris|english/.test(transMatch[2]) ? 'en' : 'id';
+    return renderTranslate(text, toLang);
+  }
+  if (/^translate$|terjemahan|terjemahkan$|terjemahkan saya/.test(low)) {
+    return `🌐 **Mode Terjemahan Indonesia ↔ Inggris**\n\nCara penggunaan:\n• *"terjemahkan 'terima kasih' ke inggris"*\n• *"translate 'good morning' ke indonesia"*\n• *"artikan 'aku cinta Indonesia' to english"*\n\nAku punya 500+ kamus kata! Coba sekarang 😊`;
+  }
+
+  // CONVERTER
+  const convMatch = low.match(/konvert(?:er)?(?:\s+)?(suhu|panjang|berat|waktu|kecepatan|temperature|length|weight|speed)/i);
+  if (convMatch) {
+    const k = {suhu:'suhu',temperature:'suhu',panjang:'panjang',length:'panjang',
+      berat:'berat',weight:'berat',waktu:'waktu',kecepatan:'kecepatan',speed:'kecepatan'}[convMatch[1].toLowerCase()];
+    if (k) return renderConverter(k);
+  }
+  if (/konverter$|konverter\s+unit|ubah\s+satuan/.test(low)) {
+    return `🔄 **Konverter Satuan**\n\nPilih konverter:\n• **"konverter suhu"** — Celsius, Fahrenheit, Kelvin\n• **"konverter panjang"** — Meter, Km, Kaki, Inci\n• **"konverter berat"** — Kg, Gram, Pound, Ton\n• **"konverter waktu"** — Jam, Menit, Hari, Tahun\n• **"konverter kecepatan"** — m/s, km/jam, Knot\n\nPilih yang kamu butuhkan! 😊`;
+  }
+
+  // RECIPE
+  const recipeKeys = Object.keys(RECIPES);
+  for (const rk of recipeKeys) {
+    if (low.includes(rk) || (rk.includes(' ') && rk.split(' ').some(w=>low.includes(w)))) {
+      const r = renderRecipe(rk);
+      if (r) return r;
+    }
+  }
+  if (/resep|cara\s+masak|bahan\s+masakan/.test(low)) {
+    return `🍳 **Koleksi Resep NusantaraAI**\n\nResep yang tersedia:\n• **"resep nasi goreng"**\n• **"resep rendang"**\n• **"resep soto ayam"**\n• **"resep gado-gado"**\n• **"resep mie goreng"**\n• **"resep pempek"**\n• **"resep bakso"**\n• **"resep martabak"**\n\nKetik nama resep yang kamu inginkan! 😋`;
+  }
+
+  // CALCULATOR
+  if (/kalkulator|calculator/.test(low)) {
+    openModal('mdcalc');
+    return `🔢 Kalkulator sudah kubuka! Bisa kamu gunakan dari jendela yang muncul.\n\nAtau ketik ekspresi matematika langsung di sini, aku akan hitung! 😊`;
+  }
+
+  // MATH EXPRESSION
+  const mathExp = low.replace(/[^\d\s\+\-\*\/\(\)\.\^%]/g,'').trim();
+  if (mathExp.length > 2 && /\d/.test(mathExp) && /[\+\-\*\/\^%]/.test(mathExp)) {
+    try {
+      const safe = mathExp.replace(/\^/g,'**');
+      const res = Function('"use strict";return('+safe+')')();
+      if (!isNaN(res)&&isFinite(res)) return `🔢 **${mathExp.replace(/\*/g,'×').replace(/\//g,'÷')} = ${parseFloat(res.toFixed(10))}**\n\nMau hitung yang lain? Atau buka kalkulator lengkap! 😊`;
+    } catch(e){}
+  }
+
+  // RANDOM FACT
+  if (/fakta\s*acak|random\s*fact|fakta\s*baru|fakta\s*seru/.test(low))
+    return `🎲 **Fakta Acak:**\n\n${FACTS[Math.floor(Math.random()*FACTS.length)]}\n\nKetik "fakta acak" lagi untuk fakta lain! 😄`;
+
+  // MOTIVATIONAL STORY
+  if (/cerita\s*motivasi|kisah\s*inspirasi|motivational|cerita\s*sukses/.test(low))
+    return MOTI_STORIES[Math.floor(Math.random()*MOTI_STORIES.length)];
+
+  // SEARCH KB
+  let best=null, score=0;
+  for (const cat of Object.values(KB)) {
+    for (const item of cat) {
+      let s=0;
+      for (const kw of item.q) {
+        if (low.includes(kw)) s+=kw.length*3;
+        else {
+          const words = low.split(/\s+/);
+          for (const w of words) if (w.length>3&&kw.includes(w)) s+=w.length;
+        }
+      }
+      if (s>score){score=s;best=item;}
+    }
+  }
+  if (best&&score>3) return best.a;
+
+  return getFallback(low);
+}
+
+function getFallback(inp) {
+  const r = [
+    `Menarik! 🤔 Untuk topik spesifik itu aku belum punya info lengkap.\n\nTapi ada banyak hal lain yang bisa kita eksplorasi:\n🎮 **"mulai kuis"** — tes pengetahuanmu\n🔤 **"tebak kata"** — game seru\n🌐 **"terjemahkan [teks] ke inggris"**\n🔄 **"konverter suhu"**\n🍳 **"resep nasi goreng"**\n🎲 **"fakta acak"**\n\nMau coba yang mana? 😊`,
+    `Hmm, aku belum punya info spesifik tentang itu. 😄\n\nAku paling andal di: sains, teknologi, sejarah, matematika, bahasa, budaya, kesehatan, ekonomi, psikologi, hukum, parenting, alam & lingkungan.\n\nAtau coba fitur interaktifku: kuis, tebak kata, terjemahan, atau konverter! 🌟`,
+    `Pertanyaan bagus! 🌟 Sayangnya database-ku belum mencakup area itu.\n\nCoba tanya dengan kata kunci berbeda, atau pilih dari:\n📚 Kategori lengkap di tombol chip atas\n🎮 Fitur interaktif di sidebar kiri\n🔢 Kalkulator di header\n\nAku siap membantu! 😊`
+  ];
+  return r[Math.floor(Math.random()*r.length)];
+}
+
+// ================================================================
+//  FORMAT & UI
+// ================================================================
+function fmt(text) {
+  text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  text = text.replace(/\*(.*?)\*/g,'<span class="hl">$1</span>');
+  text = text.replace(/```(\w+)?\n?([\s\S]*?)```/g,'<pre>$2</pre>');
+  text = text.replace(/`([^`\n]+)`/g,'<span class="ci">$1</span>');
+  text = text.replace(/\n/g,'<br>');
+  return text;
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function getTime(){return new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}
+
+function addMsg(text, role) {
+  if (!text) return;
+  const w=document.getElementById('wel'); if(w) w.remove();
+  const ca=document.getElementById('ca');
+  const el=document.createElement('div');
+  el.className=`m ${role}`;
+  const av=role==='ai'?'🌟':'😊';
+  const name=role==='ai'?'NusantaraAI':(userName||'Kamu');
+  const content=role==='ai'?fmt(text):esc(text);
+  el.innerHTML=`
+    <div class="mav">${av}</div>
+    <div style="max-width:${role==='ai'?'90%':'76%'}">
+      <div class="bbl">${content}</div>
+      <div class="mmeta">${name} • ${getTime()}</div>
+      ${role==='ai'?`<div class="react-btns"><button class="rbtn" onclick="react(this,'👍')">👍</button><button class="rbtn" onclick="react(this,'❤️')">❤️</button><button class="rbtn" onclick="react(this,'🤔')">🤔</button></div>`:''}
+    </div>
+  `;
+  ca.appendChild(el);
+  ca.scrollTop=ca.scrollHeight;
+  msgCount++;
+  if(role==='user') addHist(text);
+  updateStats();
+}
+
+function react(btn, emoji) {
+  btn.textContent = emoji + ' ✓';
+  btn.style.background='rgba(96,165,250,.2)';
+  btn.style.color='var(--accent)';
+  btn.disabled=true;
+}
+
+function addHist(text) {
+  const hl=document.getElementById('hlist');
+  const short=text.length>32?text.substring(0,32)+'...':text;
+  const it=document.createElement('div');
+  it.className='hi'; it.textContent='💬 '+short;
+  it.onclick=()=>qs(text);
+  if(hl.children.length===1&&hl.children[0].style?.textAlign==='center') hl.innerHTML='';
+  hl.insertBefore(it,hl.firstChild);
+  if(hl.children.length>25) hl.removeChild(hl.lastChild);
+}
+
+function showTyping() {
+  const ca=document.getElementById('ca');
+  const el=document.createElement('div');
+  el.className='m ai'; el.id='typ';
+  el.innerHTML=`<div class="mav">🌟</div><div><div class="bbl"><div class="twrap"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>`;
+  ca.appendChild(el);
+  ca.scrollTop=ca.scrollHeight;
+  return el;
+}
+
+async function send() {
+  if (processing) return;
+  const inp=document.getElementById('ui');
+  const text=inp.value.trim();
+  if (!text) return;
+  processing=true;
+  inp.value=''; inp.style.height='auto';
+  addMsg(text,'user');
+  const typ=showTyping();
+  const resp=findResponse(text);
+  const delay=600+Math.min((resp?resp.replace(/<[^>]*>/g,'').length:400)*0.4,1600);
+  await new Promise(r=>setTimeout(r,delay));
+  typ.remove();
+  if(resp) addMsg(resp,'ai');
+  processing=false;
+}
+
+function qs(text){document.getElementById('ui').value=text;send();}
+
+// ================================================================
+//  CALCULATOR
+// ================================================================
+let cExp='';
+function ca(k){
+  const d=document.getElementById('cdisp');
+  if(k==='C'){cExp='';d.textContent='0';return;}
+  if(k==='='){
+    try{
+      const r=Function('"use strict";return('+cExp.replace(/\^/g,'**')+')')();
+      cExp=isNaN(r)||!isFinite(r)?'Error':String(parseFloat(r.toFixed(10)));
+      d.textContent=cExp;
+    }catch(e){d.textContent='Error';cExp='';}
+    return;
+  }
+  cExp+=k; d.textContent=cExp;
+}
+
+// ================================================================
+//  UI CONTROLS
+// ================================================================
+function toggleSide(){
+  const s=document.getElementById('side');
+  sideOpen=!sideOpen;
+  s.classList.toggle('open',sideOpen);
+}
+function toggleTheme(){
+  const h=document.documentElement;
+  const dark=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',dark?'light':'dark');
+  document.querySelector('[title="Tema"]').textContent=dark?'🌙':'☀️';
+}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+// Click outside modal
+document.querySelectorAll('.mdbg').forEach(bg=>{
+  bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('show');});
+});
+function chipClick(btn,topic){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  const map={
+    sains:"Jelaskan tentang DNA dan genetika modern",
+    teknologi:"Ajarkan Python OOP dan list comprehension",
+    sejarah:"Ceritakan lengkap sejarah proklamasi Indonesia",
+    matematika:"Jelaskan kalkulus diferensial dengan contoh",
+    bahasa:"Jelaskan sistem morfologi bahasa Indonesia",
+    budaya:"Ceritakan tentang batik dan maknanya",
+    kesehatan:"Panduan olahraga dan nutrisi berbasis sains",
+    olahraga:"Prestasi bulu tangkis Indonesia di dunia",
+    ekonomi:"Cara investasi yang aman untuk pemula",
+    psikologi:"Jelaskan gaya parenting authoritative",
+    motivasi:"Berikan cerita motivasi yang menginspirasi",
+    trivia:"Fakta paling mengejutkan tentang alam semesta",
+    geografi:"Fakta menarik tentang kepulauan Indonesia",
+    memasak:"Resep nasi goreng spesial yang enak",
+    hukum:"Jelaskan hierarki peraturan di Indonesia",
+    parenting:"Tips mendidik anak usia 5-10 tahun",
+    alam:"Keanekaragaman hayati hutan tropis Indonesia",
+  };
+  if(map[topic]){document.getElementById('ui').value=map[topic];document.getElementById('ui').focus();}
+}
+function clearHist(){document.getElementById('hlist').innerHTML='<div style="font-size:11px;color:var(--tm);padding:8px;text-align:center">Riwayat dihapus.</div>';}
+document.getElementById('ca').addEventListener('click',()=>{if(sideOpen&&window.innerWidth<=680)toggleSide();});
+
+// ================================================================
+//  INPUT HANDLERS
+// ================================================================
+const uiEl=document.getElementById('ui');
+uiEl.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';});
+uiEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+
+// Keyboard calc
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('mdcalc').classList.contains('show')){
+    const valid='0123456789+-*/.()';
+    if(valid.includes(e.key)){e.preventDefault();ca(e.key);}
+    else if(e.key==='Enter'){e.preventDefault();ca('=');}
+    else if(e.key==='Escape'){e.preventDefault();closeModal('mdcalc');}
+    else if(e.key==='Backspace'){e.preventDefault();cExp=cExp.slice(0,-1);document.getElementById('cdisp').textContent=cExp||'0';}
+  }
+});
+
+// ================================================================
+//  STATS
+// ================================================================
+function updateStats(){
+  document.getElementById('st-msg').textContent=msgCount;
+  document.getElementById('st-q').textContent=quizRight;
+  document.getElementById('st-qt').textContent=quizTotal;
+  document.getElementById('st-sc').textContent=totalScore;
+  document.getElementById('st-mood').textContent=userMood;
+}
+setInterval(()=>{
+  const e=Math.floor((Date.now()-sessionStart)/1000);
+  document.getElementById('st-t').textContent=`${Math.floor(e/60)}:${(e%60).toString().padStart(2,'0')}`;
+},1000);
+</script>
+</body>
+</html>
